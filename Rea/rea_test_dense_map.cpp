@@ -62,9 +62,6 @@ int main() {
 	dm.insert(instrumented{ 4000 });
 
 	dense_map_print_instrumented_values(dm);
-
-	int b = 6;
-
 }
 
 #endif

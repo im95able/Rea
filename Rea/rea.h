@@ -426,7 +426,7 @@ constexpr bool is_over_breakoff(I capacity, I size) {
 template<typename I>
 // I models integral
 constexpr I grow_size(I size) {
-	return static_cast<I>(size * 1.5f);
+	return static_cast<I>(size * 1.5f) + I{ 2 };
 }
 
 
@@ -883,7 +883,7 @@ template<typename T,
 
 
 	public:
-		controlled_slot_map(get_empty_type &&get_empty_obj = get_empty{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+		controlled_slot_map(get_empty_type &&get_empty_obj = get_empty<value_type>{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 			slots(std::move(alloc)),
 			filled_size(size_type(0)),
 			get_empty_obj(std::move(get_empty_obj)),
@@ -1192,7 +1192,7 @@ template<typename T,
 		}
 
 	public:
-		regulated_slot_map(get_empty_type &&get_empty_obj = get_empty{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+		regulated_slot_map(get_empty_type &&get_empty_obj = get_empty<value_type>{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 			slots(std::move(alloc)),
 			filled_size(size_type{ 0 }),
 			get_empty_obj(std::move(get_empty_obj)),
@@ -1325,7 +1325,7 @@ template<typename T,
 		std::pair<iterator, id_type> _insert(T&& v) {
 			const auto value_pos = values.size();
 			values.push_back(std::forward<T>(v));
-			id_positions.push_back(slot_type(empty_pos.first));
+			id_positions.push_back(empty_pos.first);
 
 			const auto id = empty_pos.first;
 			auto &slot = iterator_slot(id_slots.begin(), empty_pos.first);
@@ -1335,7 +1335,7 @@ template<typename T,
 				empty_pos.first = npos;
 			}
 			else {
-				empty_pos.first = slot.next;
+				empty_pos.first = slot.value;
 			}
 			slot.value = value_pos;
 

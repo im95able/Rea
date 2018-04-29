@@ -31,9 +31,9 @@ int main() {
 #endif
 
 	sm_container sm;
-	sm.reserve(10);
+	//sm.reserve(10);
 
-	constexpr auto nm_ids = 100;
+	constexpr auto nm_ids = 10;
 	std::vector<sm_container::id_type> ids;
 	ids.reserve(nm_ids);
 
