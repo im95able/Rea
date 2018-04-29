@@ -205,7 +205,7 @@ Now we have a problem though. The slot which pointed to the last object inside V
 IDPosContainer stores indices of IDSlotContainer slots, which correspond to objects stored ValueContainer. E.g., third object of IDPosContainer is an index of aa IDSlotContainer slot, which corresponds to the third object od ValueContainer. Once the past the end object is moved to the erased location, its index is also moved to the corresponding location of IDPosContainer. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotMan and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Discussion" section shows how to change all internal containers). 
+As stated earlier the main difference between the SlotMan and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Discussion" section shows how to change internal containers for all library maps). 
 
 Considering all of the users objects are kept in contigious array, and all erased objects are gone for real, there is no need for controlled or regulated version of DenseMap.
 
