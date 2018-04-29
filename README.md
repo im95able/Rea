@@ -1,8 +1,6 @@
 # Rea
 Rea is a library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
-Notice : Library is still in the process of being tested. Once I find that it's  sufficiently tested, this notice will be removed. 
-
 There are 6 data structures included in this library : slot_map, controlled_slot_map, versioned_slot_map, regulated_slot_map, dense_map 
 and versioned_dense_map. Two main versions are slot_map and dense_map since they are the most different of the bunch, while the others are only simple variations of those 2. 
 
@@ -31,7 +29,12 @@ Considering that each slot will store 2 objects of "size_type" type besides the 
 Template arguments of all SlotMap variations will be subsequently explained.
 
 ### variation 1 : slot_map
-rea::slot_map acts as a basic SlotMap. It also has no additional template arguments, only the ones desribed above.
+rea::slot_map acts as a basic SlotMap. It has no additional template arguments, only the ones desribed above.
+```cpp
+rea::slot_map<T,                      // value_type
+              S = std::size_t,        // size_type
+              A = std::allocator<T>>  // allocator_type
+```
 
 ```cpp
 #include <rea.h>
@@ -76,8 +79,11 @@ int main() {
    }
    
    // lookup
-   for(auto id : ids) 
-      std::cout << sm.id_value(id).first << std::endl;
+   for(auto id : ids) {
+      if(sm.id_is_valid(id)) {
+         std::cout << sm.id_value(id).first << std::endl;
+      }
+   }
    
    // iteration
    for(auto id = sm.id_begin(); !sm.id_is_end(id); id = sm.id_next(id)) 
@@ -93,34 +99,37 @@ To solve that issue controlled_slot_map is introduced. Its second template argum
 
 ```cpp
 rea::controlled_slot_map<T,                     // value_type
-                        E = rea::get_empty<T>,  // get_empty_type
-                        S = std::size_t,        // size_type
-                        A = std::allocator<T>>  // allocator_type
+                         E = rea::get_empty<T>,  // get_empty_type
+                         S = std::size_t,        // size_type
+                         A = std::allocator<T>>  // allocator_type
 ```
 
 ```cpp
-struct get_empty_string {
-   std::string operator()() const {
-      return std::string{};
+struct set_empty_double() {
+   set_empty_double(double value) : value(value) {}
+   double operator()() const {
+      return value;
    }
+   double value;
 }
 
-rea::controlled_slot_map<std::string, get_empty_string> sm_strings;
+rea::controlled_slot_map<double, set_empty_double, std::unit16_t> c_sm(set_empty_double{3.14159});
 ```
+
 
 
 ### variation 3 : versioned_slot_map
 If, for instance, you are erasing objects inside the SlotMap from 2 different parts of your program, ids might no longer
 point to correct objects, but to either erased or objects filled with different values than what the id originally pointed to.
 
-To solve that issue versioned_slot_map is introduced. It takes as a second template argument an IntegralType, which will represent the current vesrion of the slot(it's defaulted to std::size_t). Each time an object is erased, slot which contains that object increases its version by 1.
+To solve that issue versioned_slot_map is introduced. It takes as a second template argument an IntegralType, which will represent the current vesrion of the slot(it's defaulted to std::size_t). Each time an object is erased, slot which contains that object increases its version count by 1.
 ```cpp
 rea::versioned_slot_map<T,                      // value_type
                         V = std::size_t,        // version_type
                         S = std::size_t,        // size_type
                         A = std::allocator<T>>  // allocator_type
 ```
-Here slots also store a "version_type". Choosing different "version_type" may effect size of the slot, and of the allocated memory. 
+Here slots also store a "version_type". Choosing different "version_type" may effect size of the slot, and hence the amount of memory needed.
 
 ```cpp
 #include <rea.h>
@@ -163,18 +172,16 @@ rea::versioned_slot_map<T,                      // value_type
                         S = std::size_t,        // size_type
                         A = std::allocator<T>>  // allocator_type
 ```
-Here slots store same thing as the version_slot_map.
+Here, slots store same things as in the version_slot_map.
 
 ```cpp
-struct set_empty_double() {
-   set_empty_double(double value) : value(value) {}
-   double operator()() const {
-      return value;
+struct get_empty_string {
+   std::string operator()() const {
+      return std::string{};
    }
-   double value;
 }
 
-rea::regulated_slot_map<double, set_empty_double, std::unit16_t> r_sm(set_empty_double{3.14159});
+rea::regulated_slot_map<std::string, get_empty_string> sm_strings;
 ```
 
 
@@ -189,14 +196,16 @@ DenseMap is internally implemented as 2 std::vectors and a slot_map like data st
 - vector 2 = IDPosContainer;
 - slot_map = IDSlotContainer;
 
-ValueContainer stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The IDSlotContainer stores indices which point to an object inside the ValueContainer. Once an object is erased, last object inside the ValueContainer is moved into its place, hence all objects remain densely packed. Slot of the IDSlotContainer which points to the erased object becomes available for reuse.
+ValueContainer stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The IDSlotContainer stores indices which point to an object inside the ValueContainer. Once an object is erased, last object inside the ValueContainer is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the IDSlotContainer which points to the erased object becomes available for reuse.
 
 Now we have a problem though. The slot which pointed to the last object inside ValueContainer now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the IDPosContainer.
 
 IDPosContainer stores indices of IDSlotContainer slots, which correspond to objects stored ValueContainer. E.g., third object of IDPosContainer is an index of aa IDSlotContainer slot, which corresponds to the third object od ValueContainer. Once the past the end object is moved to the erased location, its index is also moved to the corresponding location of IDPosContainer. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotMan and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Advanced" section shows how to change all internal containers). 
+As stated earlier the main difference between the SlotMan and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Discussion" section shows how to change internal containers for all library maps). 
+
+Considering all of the users objects are kept in contigious array, and all erased objects are gone for real, there is no need for controlled or regulated version of DenseMap.
 
 All DenseMaps, just like all SlotMaps, have the same first, and the last 2 template arguments.
 ```cpp
@@ -209,7 +218,12 @@ some_dense_map<T,                      // value_type
 ```
 
 ### variation 1 : dense_map 
-rea::dense_map has no additional template arguments, only the ones desribed above.
+rea::dense_map acts as a basic DenseMap. It has no additional template arguments, only the ones desribed above.
+```cpp
+rea::dense_map<T,                      // value_type
+               S = std::size_t,        // size_type
+               A = std::allocator<T>>  // allocator_type
+```
 
 ```cpp
 #include <rea.h>
@@ -219,7 +233,7 @@ rea::dense_map has no additional template arguments, only the ones desribed abov
 int main() {
    using dm_type = rea::dense_map<int>;
    using dm;
-   std::vector<sm_type::id_type> ids;
+   std::vector<dm_type::id_type> ids;
    ids.reserve(1000);
    sm.reserve(1000);
    
@@ -245,13 +259,24 @@ int main() {
    // iteration is exaclty the same as any std::container
    for(auto it = sm.begin(); it != sm.end(); ++it) { 
       std::cout << *it << std::endl;
-      ids.push_back(sm.id_of_iterator(id));
+      ids.push_back(sm.id_of_iterator(it));
    }
-   // ids are know in value iteration order
+   // "ids" are know in value iteration order
 }
 ```
-
-
+### variation 2 : versioned_dense_map
+rea::versioned_dense_map is to rea::dense_map, what rea::versioned_slot_map is to rea::slot_map. It keeps a version count for you.
+And just like for rea::versioned_slot_map, its "id_is_valid(id_type)" method may return false if the version counts dont match. 
+```cpp
+rea::versioned_dense_map<T,                      // value_type
+                         V = std::size_t,        // version_type
+                         S = std::size_t,        // size_type
+                         A = std::allocator<T>>  // allocator_type
+```
 # Installation
-Include rea.h header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
+Include "rea.h" header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
+
+# Discussion
+Discussion section will be added shortly shortly in the future.
+
 
