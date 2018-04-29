@@ -31,7 +31,12 @@ Considering that each slot will store 2 objects of "size_type" type besides the 
 Template arguments of all SlotMap variations will be subsequently explained.
 
 ### variation 1 : slot_map
-rea::slot_map acts as a basic SlotMap. It also has no additional template arguments, only the ones desribed above.
+rea::slot_map acts as a basic SlotMap. It has no additional template arguments, only the ones desribed above.
+```cpp
+rea::slot_map<T,                      // value_type
+              S = std::size_t,        // size_type
+              A = std::allocator<T>>  // allocator_type
+```
 
 ```cpp
 #include <rea.h>
@@ -163,7 +168,7 @@ rea::versioned_slot_map<T,                      // value_type
                         S = std::size_t,        // size_type
                         A = std::allocator<T>>  // allocator_type
 ```
-Here slots store same thing as the version_slot_map.
+Here slots store same things as the version_slot_map.
 
 ```cpp
 struct set_empty_double() {
@@ -209,7 +214,12 @@ some_dense_map<T,                      // value_type
 ```
 
 ### variation 1 : dense_map 
-rea::dense_map has no additional template arguments, only the ones desribed above.
+rea::dense_map acts as a basic DenseMap. It has no additional template arguments, only the ones desribed above.
+```cpp
+rea::dense_map<T,                      // value_type
+               S = std::size_t,        // size_type
+               A = std::allocator<T>>  // allocator_type
+```
 
 ```cpp
 #include <rea.h>
@@ -247,7 +257,7 @@ int main() {
       std::cout << *it << std::endl;
       ids.push_back(sm.id_of_iterator(id));
    }
-   // ids are know in value iteration order
+   // "ids" are know in value iteration order
 }
 ```
 
