@@ -273,8 +273,10 @@ rea::versioned_dense_map<T,                      // value_type
                          S = std::size_t,        // size_type
                          A = std::allocator<T>>  // allocator_type
 ```
-
-
 # Installation
 Include "rea.h" header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
+
+# Discussion
+Discussion section will be added shortly shortly in the future.
+
 
