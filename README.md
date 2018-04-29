@@ -101,20 +101,23 @@ To solve that issue controlled_slot_map is introduced. Its second template argum
 
 ```cpp
 rea::controlled_slot_map<T,                     // value_type
-                        E = rea::get_empty<T>,  // get_empty_type
-                        S = std::size_t,        // size_type
-                        A = std::allocator<T>>  // allocator_type
+                         E = rea::get_empty<T>,  // get_empty_type
+                         S = std::size_t,        // size_type
+                         A = std::allocator<T>>  // allocator_type
 ```
 
 ```cpp
-struct get_empty_string {
-   std::string operator()() const {
-      return std::string{};
+struct set_empty_double() {
+   set_empty_double(double value) : value(value) {}
+   double operator()() const {
+      return value;
    }
+   double value;
 }
 
-rea::controlled_slot_map<std::string, get_empty_string> sm_strings;
+rea::controlled_slot_map<double, set_empty_double, std::unit16_t> c_sm(set_empty_double{3.14159});
 ```
+
 
 
 ### variation 3 : versioned_slot_map
@@ -171,18 +174,16 @@ rea::versioned_slot_map<T,                      // value_type
                         S = std::size_t,        // size_type
                         A = std::allocator<T>>  // allocator_type
 ```
-Here slots store same things as the version_slot_map.
+Here, slots store same things as in the version_slot_map.
 
 ```cpp
-struct set_empty_double() {
-   set_empty_double(double value) : value(value) {}
-   double operator()() const {
-      return value;
+struct get_empty_string {
+   std::string operator()() const {
+      return std::string{};
    }
-   double value;
 }
 
-rea::regulated_slot_map<double, set_empty_double, std::unit16_t> r_sm(set_empty_double{3.14159});
+rea::regulated_slot_map<std::string, get_empty_string> sm_strings;
 ```
 
 
