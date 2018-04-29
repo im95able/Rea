@@ -34,7 +34,7 @@ Template arguments of all SlotMap variations will be subsequently explained.
 rea::slot_map acts as a basic SlotMap. It also has no additional template arguments, only the ones desribed above.
 
 ```cpp
-#include <slot_map.h>
+#include <rea.h>
 #include <vector>
 #include <iostream>
 #include <random>
@@ -69,7 +69,7 @@ int main() {
       ids.push_back(sm.insert({i, i*2}));
    }
    
-   // removal
+   // erasure
    for(size_t i = 0; i < 100; ++i) {
       auto id = get_and_remove_rand_value(ids);
       sm.erase(id);
@@ -80,7 +80,7 @@ int main() {
       std::cout << sm.id_value(id).first << std::endl;
    
    // iteration
-   for(auto id = sm.id_begin(); !sm.id_is_end(id); id = sm.id_next(id) 
+   for(auto id = sm.id_begin(); !sm.id_is_end(id); id = sm.id_next(id)) 
       std::cout << sm.id_value(id).first << std::endl;
 }
 ```
@@ -123,7 +123,7 @@ rea::versioned_slot_map<T,                      // value_type
 Here slots also store a "version_type". Choosing different "version_type" may effect size of the slot, and of the allocated memory. 
 
 ```cpp
-#include <slot_map.h>
+#include <rea.h>
 #include <vector>
 
 int main() {
@@ -212,10 +212,46 @@ some_dense_map<T,                      // value_type
 rea::dense_map has no additional template arguments, only the ones desribed above.
 
 ```cpp
+#include <rea.h>
+#include <vector>
+#include <iostream>
 
+int main() {
+   using dm_type = rea::dense_map<int>;
+   using dm;
+   std::vector<sm_type::id_type> ids;
+   ids.reserve(1000);
+   sm.reserve(1000);
+   
+   // insertion
+   for(size_t i = 0; i < 1000; ++i) {
+      dm.push_back(sm.insert({i, i*2}));
+   }
+   
+   // erasure
+   for(size_t i = 0; i < 100; ++i) {
+      auto id = get_and_remove_rand_value(ids); //this function is defined in slot map code above
+      dm.erase(id);
+   }
+   
+   // lookup
+   for(auto id : ids) {
+      std::cout << sm.id_value(id).first << std::endl; 
+      // Or
+      // std::cout << *sm.iterator_of_id(id) << std::endl; 
+   }      
+   
+   ids.clear();
+   // iteration is exaclty the same as any std::container
+   for(auto it = sm.begin(); it != sm.end(); ++it) { 
+      std::cout << *it << std::endl;
+      ids.push_back(sm.id_of_iterator(id));
+   }
+   // ids are know in value iteration order
+}
 ```
 
 
 # Installation
-Include slot_map.h header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
+Include rea.h header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
 
