@@ -278,5 +278,5 @@ rea::versioned_dense_map<T,                      // value_type
 
 
 # Installation
-Include rea.h header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
+Include "rea.h" header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
 
