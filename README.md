@@ -255,7 +255,7 @@ int main() {
    // iteration is exaclty the same as any std::container
    for(auto it = sm.begin(); it != sm.end(); ++it) { 
       std::cout << *it << std::endl;
-      ids.push_back(sm.id_of_iterator(id));
+      ids.push_back(sm.id_of_iterator(it));
    }
    // "ids" are know in value iteration order
 }
