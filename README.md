@@ -1,5 +1,5 @@
 # Rea
-Rea is a library of data structures implemented in C++11, designed for constant time inserting, erasing, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
+Rea is a library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
 Notice : Library is still in the process of being tested. Once I find that it's  sufficiently tested, this notice will be removed. 
 
