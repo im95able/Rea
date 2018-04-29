@@ -196,7 +196,7 @@ DenseMap is internally implemented as 2 std::vectors and a slot_map like data st
 - vector 2 = IDPosContainer;
 - slot_map = IDSlotContainer;
 
-ValueContainer stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The IDSlotContainer stores indices which point to an object inside the ValueContainer. Once an object is erased, last object inside the ValueContainer is moved into its place, hence all objects remain densely packed. Slot of the IDSlotContainer which points to the erased object becomes available for reuse.
+ValueContainer stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The IDSlotContainer stores indices which point to an object inside the ValueContainer. Once an object is erased, last object inside the ValueContainer is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the IDSlotContainer which points to the erased object becomes available for reuse.
 
 Now we have a problem though. The slot which pointed to the last object inside ValueContainer now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the IDPosContainer.
 
