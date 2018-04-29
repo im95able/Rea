@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{a066d8e5-ecf4-453d-9e59-969754ef7be9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Tests">
+      <UniqueIdentifier>{8166257d-ce69-4559-9f38-aa0d6f2f9d5b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rea.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="rea_test_base.h">
+      <Filter>Source\Tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="rea_test_dense_map.cpp">
+      <Filter>Source\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="rea_test_slot_map.cpp">
+      <Filter>Source\Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
