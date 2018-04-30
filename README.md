@@ -192,18 +192,18 @@ Implementation details are given bellow, although there is a video which explain
 
 ## Implementation
 DenseMap is internally implemented as 2 std::vectors and a slot_map like data structure.
-- vector 1 = ValueContainer;
-- vector 2 = IDPosContainer;
-- slot_map = IDSlotContainer;
+- vector 1 = **ValueContainer**;
+- vector 2 = **IDPosContainer**;
+- slot_map = **IDSlotContainer**;
 
-ValueContainer stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The IDSlotContainer stores indices which point to an object inside the ValueContainer. Once an object is erased, last object inside the ValueContainer is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the IDSlotContainer which points to the erased object becomes available for reuse.
+**ValueContainer** stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The **IDSlotContainer** stores indices which point to an object inside the **ValueContainer**. Once an object is erased, last object inside the **ValueContainer** is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the **IDSlotContainer** which points to the erased object becomes available for reuse.
 
-Now we have a problem though. The slot which pointed to the last object inside ValueContainer now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the IDPosContainer.
+Now we have a problem though. The slot which pointed to the last object inside **ValueContainer** now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the **IDPosContainer**.
 
-IDPosContainer stores indices of IDSlotContainer slots, which correspond to objects stored ValueContainer. E.g., third object of IDPosContainer is an index of aa IDSlotContainer slot, which corresponds to the third object od ValueContainer. Once the past the end object is moved to the erased location, its index is also moved to the corresponding location of IDPosContainer. In that way all lookup operations are done in constant time.
+**IDPosContainer** stores indices of **IDSlotContainer** slots, which correspond to objects stored **ValueContainer**. E.g., third object of **IDPosContainer** is an index of aa **IDSlotContainer** slot, which corresponds to the third object od **ValueContainer**. Once the past the end object is moved to the erased location, its index is also moved to the corresponding location of **IDPosContainer**. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotMan and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Discussion" section shows how to change internal containers for all library maps). 
+As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Discussion" section shows how to change internal containers for all library maps). 
 
 Considering all of the users objects are kept in contigious array, and all erased objects are gone for real, there is no need for controlled or regulated version of DenseMap.
 
