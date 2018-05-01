@@ -164,7 +164,7 @@ int main() {
 
 
 ### variation 4 : regulated_slot_map 
-If you need both the ability to set an empty value and to keep a version count, use regulated_slot_map. It's template second template 
+If you need both the ability to set an empty value and to keep a version count, use regulated_slot_map. Its second template argument
 is functor which returns an empty value, and its third is an IntegralType to be used for versioning. They are defaulted same as controlled_slot_map and versiond_slot_map.
 
 ```cpp
@@ -188,7 +188,7 @@ rea::regulated_slot_map<std::string, get_empty_string> sm_strings;
 
 
 # DenseMap
-If like in the SlotMap you need constant time insertion, removal, and lookup, as well as cache firendly iteration through a contiguous array, use DenseMap.
+If like in the SlotMap you need constant time insertion, removal, and lookup, as well as cache friendly iteration through a contiguous array, use DenseMap.
 
 Implementation details are given below, although there is a video which explains exactly what this data structure is. In [the video](https://www.youtube.com/watch?v=SHaAR7XPtNU) this data structure is called SlotMap not DenseMap. If you've seen it, "Implementation" section won't give you any more details and could be skipped.
 
@@ -207,7 +207,7 @@ Now we have a problem though. The slot which pointed to the last object inside *
 ## Usage
 As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used (by default std::vector::iterator, as with SlotMap you can change the internal containers, "Discussion" section shows how to do that). 
 
-Considering all of the users objects are kept in a contigious array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
+Considering all of the users objects are kept in a contiguous array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
 
 All DenseMaps, just like all SlotMaps, have the same first, and the last 2 template arguments.
 ```cpp
