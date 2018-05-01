@@ -26,7 +26,7 @@ some_slot_map<T,                      // value_type
               S = std::size_t,        // size_type 
               A = std::allocator<T>>; // allocator_type 
 ```
-Considering that each slot will store 2 objects of "size_type" type besides the 1 object of "value_type", knowing in advance that the size of the container will never outgrow max value of the given "size_type", user might want to restrict how much space slots they take up.
+Considering that each slot will store 2 objects of "size_type" type besides the 1 object of "value_type", knowing in advance that the size of the container will never outgrow max value of the given "size_type", user might want to restrict how much space slots take up.
 Template arguments of all SlotMap variations will be subsequently explained.
 
 ### variation 1 : slot_map
