@@ -204,9 +204,9 @@ Now we have a problem though. The slot which pointed to the last object inside *
 *IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object od *ValueContainer*. Once the past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, as with SlotMap you can cahnge the internal containers, "Discussion" section shows how to do that). 
+As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, as with SlotMap you can change the internal containers, "Discussion" section shows how to do that). 
 
-Considering all of the users objects are kept in contigious array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
+Considering all of the users objects are kept in a contigious array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
 
 All DenseMaps, just like all SlotMaps, have the same first, and the last 2 template arguments.
 ```cpp
