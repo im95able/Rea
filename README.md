@@ -1,5 +1,5 @@
 # Rea
-Rea is a library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
+Rea is a lightweight library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
 There are 6 data structures included in this library : slot_map, controlled_slot_map, versioned_slot_map, regulated_slot_map, dense_map 
 and versioned_dense_map. Two main versions are slot_map and dense_map since they are the most different of the bunch, while the others are only simple variations of those 2. 
@@ -201,12 +201,12 @@ DenseMap is internally implemented as 2 std::vectors and a slot_map like data st
 
 Now we have a problem though. The slot which pointed to the last object inside **ValueContainer** now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the **IDPosContainer**.
 
-**IDPosContainer** stores indices of **IDSlotContainer** slots, which correspond to objects stored **ValueContainer**. E.g., third object of **IDPosContainer** is an index of aa **IDSlotContainer** slot, which corresponds to the third object od **ValueContainer**. Once the past the end object is moved to the erased location, its index is also moved to the corresponding location of **IDPosContainer**. In that way all lookup operations are done in constant time.
+**IDPosContainer** stores indices of **IDSlotContainer** slots, which correspond to objects stored **ValueContainer**. E.g., third object of **IDPosContainer** is an index of an **IDSlotContainer** slot, and that slot points to the third object od **ValueContainer**. Once the past the end object is moved to the erased location, its index inside **IDSlotContainer** is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
 
 ## Usage
 As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, as with SlotMap you can cahnge the internal containers, "Discussion" section shows how to do that). 
 
-Considering all of the users objects are kept in contigious array, and all erased objects are gone for real, there is no need for controlled or regulated version of DenseMap.
+Considering all of the users objects are kept in contigious array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
 
 All DenseMaps, just like all SlotMaps, have the same first, and the last 2 template arguments.
 ```cpp
