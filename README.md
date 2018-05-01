@@ -1,5 +1,5 @@
 # Rea
-Rea is a library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
+Rea is a lightweight library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
 There are 6 data structures included in this library : slot_map, controlled_slot_map, versioned_slot_map, regulated_slot_map, dense_map 
 and versioned_dense_map. Two main versions are slot_map and dense_map since they are the most different of the bunch, while the others are only simple variations of those 2. 
@@ -8,8 +8,9 @@ and versioned_dense_map. Two main versions are slot_map and dense_map since they
 Use SlotMap when you have to insert, erase, or lookup data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteratorion, use DenseMap.
 
 ## Implementation
-SlotMap internally stores its objects in an std::deque. Once you erase an object from SlotMap, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last empitied slot.
-The internal Random Access Container will never grow unless all slots are filled. 
+SlotMap internally stores its objects in an some RandomAccessContainer(default is std::deque). Once you erase an object from SlotMap, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last empitied slot.
+The internal container will never grow unless all slots are filled. "Discussion" section shows how to change the internal container from
+std::deque to some other container.
 
 Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. 
 
@@ -25,7 +26,7 @@ some_slot_map<T,                      // value_type
               S = std::size_t,        // size_type 
               A = std::allocator<T>>; // allocator_type 
 ```
-Considering that each slot will store 2 objects of "size_type" type besides the 1 object of "value_type", knowing in advance that the size of the container will never outgrow max value of the given "size_type", user might want to restrict how much space slots they take up.
+Considering that each slot will store 2 objects of "size_type" type besides the 1 object of "value_type", knowing in advance that the size of the container will never outgrow max value of the given "size_type", user might want to restrict how much space slots take up.
 Template arguments of all SlotMap variations will be subsequently explained.
 
 ### variation 1 : slot_map
@@ -95,7 +96,7 @@ int main() {
 ### variation 2 : controlled_slot_map
 Objects which you erase are not destructed, only "marked" as empty, so they can be reassigned to in the future. If you are storing objects which themselves are holding some resources(e.g. pointer to some allocated memory) this could be problematic, beacuse you won't be able to relase that memory until the entire SlotMap is destructed or another value is assigned to that object. 
 
-To solve that issue controlled_slot_map is introduced. Its second template argument is a functor which returns a value to be assigned to all empty slots(it's defaulted to a "rea::get_empty" functor which returns default constructed object).
+To solve that issue, controlled_slot_map is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots(it's defaulted to a "rea::get_empty" functor which returns default constructed object).
 
 ```cpp
 rea::controlled_slot_map<T,                     // value_type
@@ -192,20 +193,20 @@ Implementation details are given bellow, although there is a video which explain
 
 ## Implementation
 DenseMap is internally implemented as 2 std::vectors and a slot_map like data structure.
-- vector 1 = ValueContainer;
-- vector 2 = IDPosContainer;
-- slot_map = IDSlotContainer;
+- vector 1 = *ValueContainer*;
+- vector 2 = *IDPosContainer*;
+- slot_map = *IDSlotContainer*;
 
-ValueContainer stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The IDSlotContainer stores indices which point to an object inside the ValueContainer. Once an object is erased, last object inside the ValueContainer is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the IDSlotContainer which points to the erased object becomes available for reuse.
+*ValueContainer* stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The *IDSlotContainer* stores indices which point to an object inside the *ValueContainer*. Once an object is erased, last object inside the *ValueContainer* is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the *IDSlotContainer* which points to the erased object becomes available for reuse.
 
-Now we have a problem though. The slot which pointed to the last object inside ValueContainer now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the IDPosContainer.
+Now we have a problem though. The slot which pointed to the last object inside *ValueContainer* now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the *IDPosContainer*.
 
-IDPosContainer stores indices of IDSlotContainer slots, which correspond to objects stored ValueContainer. E.g., third object of IDPosContainer is an index of aa IDSlotContainer slot, which corresponds to the third object od ValueContainer. Once the past the end object is moved to the erased location, its index is also moved to the corresponding location of IDPosContainer. In that way all lookup operations are done in constant time.
+*IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object od *ValueContainer*. Once the past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotMan and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, "Discussion" section shows how to change internal containers for all library maps). 
+As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, as with SlotMap you can cahnge the internal containers, "Discussion" section shows how to do that). 
 
-Considering all of the users objects are kept in contigious array, and all erased objects are gone for real, there is no need for controlled or regulated version of DenseMap.
+Considering all of the users objects are kept in contigious array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
 
 All DenseMaps, just like all SlotMaps, have the same first, and the last 2 template arguments.
 ```cpp
@@ -277,6 +278,6 @@ rea::versioned_dense_map<T,                      // value_type
 Include "rea.h" header file in your project, and you're ready to go. It should work with any C++11 compliant compiler.
 
 # Discussion
-Discussion section will be added shortly shortly in the future.
+Discussion section will be added shortly in the future.
 
 
