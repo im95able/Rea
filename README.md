@@ -202,7 +202,7 @@ DenseMap is internally implemented as 2 std::vectors and a slot_map like data st
 
 Now we have a problem though. The slot which pointed to the last object inside *ValueContainer* now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the *IDPosContainer*.
 
-*IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object od *ValueContainer*. Once the past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
+*IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object of *ValueContainer*. Once past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of *IDSlotContainer*. In that way all lookup operations are done in constant time.
 
 ## Usage
 As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used (by default std::vector::iterator, as with SlotMap you can change the internal containers, "Discussion" section shows how to do that). 
