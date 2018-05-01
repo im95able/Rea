@@ -268,7 +268,7 @@ int main() {
 ```
 ### variation 2 : versioned_dense_map
 `rea::versioned_dense_map` is to `rea::dense_map`, what `rea::versioned_slot_map` is to `rea::slot_map`. It keeps a version count for you.
-And just like for `rea::versioned_slot_map`, its "`id_is_valid(id_type)`" method may return false if the version counts dont match. 
+And just like for `rea::versioned_slot_map`, `rea::versioned_dense_map::id_is_valid(id_type)` method may return false if the version counts dont match. 
 ```cpp
 rea::versioned_dense_map<T,                      // value_type
                          V = std::size_t,        // version_type
