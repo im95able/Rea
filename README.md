@@ -1,20 +1,20 @@
 # Rea
-Rea is a lightweight library of data structures implemented in C++11, designed for constant time inserton, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
+Rea is a lightweight library of data structures implemented in C++11, designed for constant time insertion, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
-There are 6 data structures included in this library : slot_map, controlled_slot_map, versioned_slot_map, regulated_slot_map, dense_map 
-and versioned_dense_map. Two main versions are slot_map and dense_map since they are the most different of the bunch, while the others are only simple variations of those 2. 
+There are 6 data structures included in this library : `slot_map`, `controlled_slot_map`, `versioned_slot_map`, `regulated_slot_map`, `dense_map` 
+and `versioned_dense_map`. The two key data structures are `slot_map` and `dense_map`: the other four are only simple variations of those 2. 
 
 # SlotMap 
-Use SlotMap when you have to insert, erase, or lookup data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteratorion, use DenseMap.
+Use SlotMap when you have to insert, erase, or look up data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteration, use DenseMap.
 
 ## Implementation
-SlotMap internally stores its objects in an some RandomAccessContainer(default is std::deque). Once you erase an object from SlotMap, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last empitied slot.
-The internal container will never grow unless all slots are filled. "Discussion" section shows how to change the internal container from
-std::deque to some other container.
+SlotMap internally stores its objects in some RandomAccessContainer (by default `std::deque`). Once you erase an object from SlotMap, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last emptied slot.
+The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the 
+internal container from `std::deque` to some other container.
 
 Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. 
 
-While you can use the ids to iterate over all stored object, it's not advised to do it repeatedly. You might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use DenseMap.
+While you can use the ids to iterate over all stored objects, it's not advisable to do it repeatedly: you might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use DenseMap.
 
 ## Usage
 All SlotMaps have the same first, and the last 2 template arguments.
@@ -26,11 +26,12 @@ some_slot_map<T,                      // value_type
               S = std::size_t,        // size_type 
               A = std::allocator<T>>; // allocator_type 
 ```
-Considering that each slot will store 2 objects of "size_type" type besides the 1 object of "value_type", knowing in advance that the size of the container will never outgrow max value of the given "size_type", user might want to restrict how much space slots take up.
-Template arguments of all SlotMap variations will be subsequently explained.
+Considering that each slot will store two objects of "size_type" type as well as the single object of "value_type", if you know in advance the maximum size of the container, you might want to restrict how much space slots take up by choosing a smaller "size_type" that can still store that maximum container size.
+
+Template arguments for all SlotMap variations are explained below.
 
 ### variation 1 : slot_map
-rea::slot_map acts as a basic SlotMap. It has no additional template arguments, only the ones desribed above.
+rea::slot_map acts as a basic SlotMap. It has no additional template arguments, only the ones described above.
 ```cpp
 rea::slot_map<T,                      // value_type
               S = std::size_t,        // size_type
@@ -94,9 +95,9 @@ int main() {
 
 
 ### variation 2 : controlled_slot_map
-Objects which you erase are not destructed, only "marked" as empty, so they can be reassigned to in the future. If you are storing objects which themselves are holding some resources(e.g. pointer to some allocated memory) this could be problematic, beacuse you won't be able to relase that memory until the entire SlotMap is destructed or another value is assigned to that object. 
+Objects which you erase are not destroyed, only "marked" as empty, so they can be reassigned to in the future. If you are storing objects which themselves are holding some resources (e.g. a pointer to some allocated memory) this could be problematic, beacuse you won't be able to release that memory until the entire SlotMap is destroyed or another value is assigned to that object. 
 
-To solve that issue, controlled_slot_map is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots(it's defaulted to a "rea::get_empty" functor which returns default constructed object).
+To solve that issue, controlled_slot_map is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots (it's defaulted to a `rea::get_empty` functor which returns a default constructed object).
 
 ```cpp
 rea::controlled_slot_map<T,                     // value_type
@@ -123,7 +124,7 @@ rea::controlled_slot_map<double, set_empty_double, std::unit16_t> c_sm(set_empty
 If, for instance, you are erasing objects inside the SlotMap from 2 different parts of your program, ids might no longer
 point to correct objects, but to either erased or objects filled with different values than what the id originally pointed to.
 
-To solve that issue versioned_slot_map is introduced. It takes as a second template argument an IntegralType, which will represent the current vesrion of the slot(it's defaulted to std::size_t). Each time an object is erased, slot which contains that object increases its version count by 1.
+To solve that issue, `versioned_slot_map` is introduced. It takes as a second template argument an IntegralType, which will represent the current version of the slot (default is `std::size_t`). Each time an object is erased, the slot which contains that object increases its version count by 1.
 ```cpp
 rea::versioned_slot_map<T,                      // value_type
                         V = std::size_t,        // version_type
