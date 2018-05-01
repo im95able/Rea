@@ -45,6 +45,12 @@ int main() {
 	sm.erase(ids[1]);
 	sm.erase(ids[5]);
 	sm.erase(ids[8]);
+	sm.erase(ids[2]);
+	sm.erase(ids[4]);
+	sm.erase(ids[0]);
+	sm.erase(ids[9]);
+	sm.erase(ids[6]);
+	sm.erase(ids[7]);
 
 	slot_map_print_instrumented_values(sm);
 

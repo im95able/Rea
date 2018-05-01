@@ -44,9 +44,7 @@ int main() {
 	dm.erase(ids[8]);
 	dm.erase(ids[4]);
 
-
 	dense_map_print_instrumented_values(dm);
-
 
 	dm.insert(instrumented{ 1000 });
 	dm.insert(instrumented{ 2000 });
