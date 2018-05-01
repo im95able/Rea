@@ -12,7 +12,7 @@ SlotMap internally stores its objects in some RandomAccessContainer (by default 
 The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the 
 internal container from `std::deque` to some other container.
 
-Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. Id is either just and index or an index and a version count in case of the version variatons of SlotMaps and DenseMaps. More on that later on. That index is what allows us to acces the object in constant time.
+Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. Id is either just and index or an index and a version count in case of the version variatons of SlotMaps and DenseMaps. More on that later on. That index is what allows us to access the objects in constant time.
 
 While you can use the ids to iterate over all stored objects, it's not advisable to do it repeatedly: you might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use DenseMap.
 
