@@ -96,7 +96,7 @@ int main() {
 ### variation 2 : controlled_slot_map
 Objects which you erase are not destructed, only "marked" as empty, so they can be reassigned to in the future. If you are storing objects which themselves are holding some resources(e.g. pointer to some allocated memory) this could be problematic, beacuse you won't be able to relase that memory until the entire SlotMap is destructed or another value is assigned to that object. 
 
-To solve that issue controlled_slot_map is introduced. Its second template argument is a functor which returns a value to be assigned to all empty slots(it's defaulted to a "rea::get_empty" functor which returns default constructed object).
+To solve that issue, controlled_slot_map is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots(it's defaulted to a "rea::get_empty" functor which returns default constructed object).
 
 ```cpp
 rea::controlled_slot_map<T,                     // value_type
@@ -193,15 +193,15 @@ Implementation details are given bellow, although there is a video which explain
 
 ## Implementation
 DenseMap is internally implemented as 2 std::vectors and a slot_map like data structure.
-- vector 1 = **ValueContainer**;
-- vector 2 = **IDPosContainer**;
-- slot_map = **IDSlotContainer**;
+- vector 1 = *ValueContainer*;
+- vector 2 = *IDPosContainer*;
+- slot_map = *IDSlotContainer*;
 
-**ValueContainer** stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The **IDSlotContainer** stores indices which point to an object inside the **ValueContainer**. Once an object is erased, last object inside the **ValueContainer** is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the **IDSlotContainer** which points to the erased object becomes available for reuse.
+*ValueContainer* stores objects of type "value_type" of the DenseMap, and just like any other vector they are stored contiguously. The *IDSlotContainer* stores indices which point to an object inside the *ValueContainer*. Once an object is erased, last object inside the *ValueContainer* is moved into its place, hence all objects remain densely packed at the cost of not preserving order. Slot of the *IDSlotContainer* which points to the erased object becomes available for reuse.
 
-Now we have a problem though. The slot which pointed to the last object inside **ValueContainer** now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the **IDPosContainer**.
+Now we have a problem though. The slot which pointed to the last object inside *ValueContainer* now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the *IDPosContainer*.
 
-**IDPosContainer** stores indices of **IDSlotContainer** slots, which correspond to objects stored **ValueContainer**. E.g., third object of **IDPosContainer** is an index of an **IDSlotContainer** slot, and that slot points to the third object od **ValueContainer**. Once the past the end object is moved to the erased location, its index inside **IDSlotContainer** is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
+*IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object od *ValueContainer*. Once the past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
 
 ## Usage
 As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used(by default std::vector::iterator, as with SlotMap you can cahnge the internal containers, "Discussion" section shows how to do that). 
