@@ -220,7 +220,7 @@ some_dense_map<T,                      // value_type
 ```
 
 ### variation 1 : dense_map 
-rea::dense_map acts as a basic DenseMap. It has no additional template arguments, only the ones desribed above.
+`rea::dense_map` acts as a basic DenseMap. It has no additional template arguments, only the ones desribed above.
 ```cpp
 rea::dense_map<T,                      // value_type
                S = std::size_t,        // size_type
@@ -267,8 +267,8 @@ int main() {
 }
 ```
 ### variation 2 : versioned_dense_map
-rea::versioned_dense_map is to rea::dense_map, what rea::versioned_slot_map is to rea::slot_map. It keeps a version count for you.
-And just like for rea::versioned_slot_map, its "id_is_valid(id_type)" method may return false if the version counts dont match. 
+`rea::versioned_dense_map` is to `rea::dense_map`, what `rea::versioned_slot_map` is to `rea::slot_map`. It keeps a version count for you.
+And just like for `rea::versioned_slot_map`, its "`id_is_valid(id_type)`" method may return false if the version counts dont match. 
 ```cpp
 rea::versioned_dense_map<T,                      // value_type
                          V = std::size_t,        // version_type
