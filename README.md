@@ -8,8 +8,9 @@ and versioned_dense_map. Two main versions are slot_map and dense_map since they
 Use SlotMap when you have to insert, erase, or lookup data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteratorion, use DenseMap.
 
 ## Implementation
-SlotMap internally stores its objects in an std::deque. Once you erase an object from SlotMap, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last empitied slot.
-The internal Random Access Container will never grow unless all slots are filled. 
+SlotMap internally stores its objects in an some RandomAccessContainer(default is std::deque). Once you erase an object from SlotMap, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last empitied slot.
+The internal container will never grow unless all slots are filled. "Discussion" section shows how to change the internal container from
+std::deque to some other container.
 
 Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. 
 
