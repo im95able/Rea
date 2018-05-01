@@ -100,7 +100,7 @@ Objects which you erase are not destroyed, only "marked" as empty, so they can b
 To solve that issue, controlled_slot_map is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots (it's defaulted to a `rea::get_empty` functor which returns a default constructed object).
 
 ```cpp
-rea::controlled_slot_map<T,                     // value_type
+rea::controlled_slot_map<T,                      // value_type
                          E = rea::get_empty<T>,  // get_empty_type
                          S = std::size_t,        // size_type
                          A = std::allocator<T>>  // allocator_type
