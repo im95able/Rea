@@ -81,11 +81,9 @@ int main() {
    }
    
    // lookup
-   for(auto id : ids) {
-      if(sm.id_is_valid(id)) {
-         std::cout << sm.id_value(id).first << std::endl;
-      }
-   }
+   for(auto id : ids) 
+      std::cout << sm.id_value(id).first << std::endl;
+   
    
    // iteration
    for(auto id = sm.id_begin(); !sm.id_is_end(id); id = sm.id_next(id)) 
