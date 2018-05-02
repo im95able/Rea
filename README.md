@@ -1,7 +1,7 @@
 # Rea
 Rea is a lightweight library of data structures implemented in C++11, designed for constant time insertion, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
-There are 6 data structures included in this library : `slot_list`, `controlled_slot_list`, `versioned_slot_list`, `regulated_slot_list`, `slot_map` and `versioned_slot_map`. The two key data structures are `slot_list` and `list_map`: the other four are only simple variations of those 2. 
+There are 6 data structures included in this library : `slot_list`, `controlled_slot_list`, `versioned_slot_list`, `regulated_slot_list`, `slot_map` and `versioned_slot_map`. The two key data structures are `slot_list` and `slot_map`: the other four are only simple variations of those 2. 
 
 # SlotList 
 Use SlotList when you have to insert, erase, or look up data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteration, use SlotMap.
