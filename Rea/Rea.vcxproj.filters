@@ -17,7 +17,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="rea_test_dense_map.cpp">
+    <ClCompile Include="rea_test_slot_list.cpp">
       <Filter>Source\Tests</Filter>
     </ClCompile>
     <ClCompile Include="rea_test_slot_map.cpp">

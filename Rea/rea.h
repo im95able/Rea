@@ -87,13 +87,13 @@ return (std::numeric_limits<I>::max)();
 template<typename S>
 // S models Integral
 struct trivial_slot {
-using value_type = S;
-using size_type = value_type;
+	using value_type = S;
+	using size_type = value_type;
 
-value_type value;
+	value_type value;
 
-trivial_slot() = default;
-trivial_slot(value_type v) : value(v) {}
+	trivial_slot() = default;
+	trivial_slot(value_type v) : value(v) {}
 };
 
 
@@ -101,15 +101,15 @@ template<typename S, typename V>
 // S models Integral
 // V models Integral
 struct versioned_trivial_slot {
-using value_type = S;
-using size_type = value_type;
-using version_type = V;
+	using value_type = S;
+	using size_type = value_type;
+	using version_type = V;
 
-value_type value;
-version_type version;
+	value_type value;
+	version_type version;
 
-versioned_trivial_slot() = default;
-versioned_trivial_slot(value_type v) : version(min_type_value<version_type>()), value(v) {}
+	versioned_trivial_slot() = default;
+	versioned_trivial_slot(value_type v) : version(min_type_value<version_type>()), value(v) {}
 };
 
 
@@ -118,15 +118,15 @@ template<typename T, typename S>
 // T models SemiRegular
 // S models Integral
 struct bidirectional_slot {
-using value_type = T;
-using size_type = S;
+	using value_type = T;
+	using size_type = S;
 
-size_type prev;
-size_type next;
-value_type value;
+	size_type prev;
+	size_type next;
+	value_type value;
 
-template<typename... Args>
-bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), value(std::forward<Args>(args)...) {}
+	template<typename... Args>
+	bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), value(std::forward<Args>(args)...) {}
 };
 
 
@@ -135,17 +135,17 @@ template<typename T, typename S, typename V>
 // S models Integral
 // V models Integral
 struct versioned_bidirectional_slot {
-using value_type = T;
-using size_type = S;
-using version_type = V;
+	using value_type = T;
+	using size_type = S;
+	using version_type = V;
 
-size_type prev;
-size_type next;
-version_type version;
-value_type value;
+	size_type prev;
+	size_type next;
+	version_type version;
+	value_type value;
 
-template<typename... Args>
-versioned_bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), version(min_type_value<version_type>()), value(std::forward<Args>(args)...) {}
+	template<typename... Args>
+	versioned_bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), version(min_type_value<version_type>()), value(std::forward<Args>(args)...) {}
 };
 
 
@@ -162,42 +162,42 @@ using default_allocator_type = std::allocator<T>;
 // these type functions tell him what should be their "value_type".
 //**************************************************************************************************
 
-// "value_type" of "slot_map::container_type"
+// "value_type" of "slot_list::container_type"
 template<typename T, typename S>
 // T models SemiRegular
 // S models Integral
-using slot_type = bidirectional_slot<T, S>;
+using sl_slot_type = bidirectional_slot<T, S>;
 
-// "value_type" of "versioned_slot_map::container_type"
+// "value_type" of "versioned_slot_list::container_type"
 template<typename T, typename S, typename V>
 // T models SemiRegular
 // S models Integral
 // V models Integral
-using versioned_slot_type = versioned_bidirectional_slot<T, S, V>;
+using sl_versioned_slot_type = versioned_bidirectional_slot<T, S, V>;
 
-// "value_type" of "controlled_slot_map::container_type"
+// "value_type" of "controlled_slot_list::container_type"
 template<typename T, typename S>
 // T models SemiRegular
 // S models Integral
-using controlled_slot_type = slot_type<T, S>;
+using sl_controlled_slot_type = sl_slot_type<T, S>;
 
-// "value_type" of "regulated_slot_map::container_type"
+// "value_type" of "regulated_slot_list::container_type"
 template<typename T, typename S, typename V>
 // T models SemiRegular
 // S models Integral
 // V models Integral
-using regulated_slot_type = versioned_slot_type<T, S, V>;
+using sl_regulated_slot_type = sl_versioned_slot_type<T, S, V>;
 
-// "value_type" of "dense_map::id_slot_container_type"
+// "value_type" of "slot_map::id_slot_container_type"
 template<typename S>
 // S models Integral
-using dense_slot_type = trivial_slot<S>;
+using sm_slot_type = trivial_slot<S>;
 
-// "value_type" of "versioned_dense_map::id_slot_container_type"
+// "value_type" of "versioned_slot_map::id_slot_container_type"
 template<typename S, typename V>
 // S models Integral
 // V models Integral
-using versioned_dense_slot_type = versioned_trivial_slot<S, V>;
+using sm_versioned_slot_type = versioned_trivial_slot<S, V>;
 
 
 
@@ -223,33 +223,33 @@ using versioned_dense_slot_type = versioned_trivial_slot<S, V>;
 // They may be changed to some other containers only if they model given concepts.
 //**************************************************************************************************
 
-// Container which will be used to store value slots of "slot_map"
+// Container which will be used to store slots of "slot_list"
 template<typename N, typename A>
 // N models Slot
 // A models Allocator
-// slot_map_container_type models SlotContainer
-using slot_map_container_type = std::deque<N, AllocatorRebindType<A, N>>;
+// slot_list_container_type models SlotContainer
+using sl_container_type = std::deque<N, AllocatorRebindType<A, N>>;
 
-// Container which will be used to store values of "dense_map" 
+// Container which will be used to store values of "slot_map" 
 template<typename T, typename A>
 // T models SemiRegular
 // A models Allocator
-// slot_map_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
-using dense_map_value_container_type = std::vector<T, A>;
+// slot_list_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
+using sm_value_container_type = std::vector<T, A>;
 
-// Container which will be used to store id slots of "dense_map", 
+// Container which will be used to store id slot indices of "slot_map", 
 template<typename S, typename A>
 // S models Integral
 // A models Allocator
-// slot_map_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
-using dense_map_id_pos_container_type = std::vector<S, AllocatorRebindType<A, S>>;
+// slot_list_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
+using sm_id_pos_container_type = std::vector<S, AllocatorRebindType<A, S>>;
 
-// Container which will be used to store id positions of "dense_map", 
+// Container which will be used to store id slots of "slot_map", 
 template<typename N, typename A>
 // N models Slot
 // A models Allocator
-// slot_map_container_type models SlotContainer
-using dense_map_id_slot_container_type = std::vector<N, AllocatorRebindType<A, N>>;
+// slot_list_container_type models SlotContainer
+using sm_id_slot_container_type = std::vector<N, AllocatorRebindType<A, N>>;
 
 
 
@@ -279,96 +279,96 @@ void set_predecessor(N& slot, SizeType<N> prev) { slot.prev = prev; }
 template<typename N>
 // N models TrivialSlot 
 struct trivial_get_successor_obj {
-SizeType<N> operator()(N& slot) const {
-	return slot.value;
-}
+	SizeType<N> operator()(N& slot) const {
+		return slot.value;
+	}
 };
 
 template<typename N>
 // N models TrivialSlot 
 struct trivial_set_successor_obj {
-void operator()(N& slot, SizeType<N> next) const {
-	slot.value = next;
-}
+	void operator()(N& slot, SizeType<N> next) const {
+		slot.value = next;
+	}
 };
 
 template<typename N>
 // N models TrivialSlot 
 struct trivial_versioned_set_successor_obj {
-void operator()(N& slot, SizeType<N> next) const {
-	++slot.version;
-	slot.next = next;
-}
+	void operator()(N& slot, SizeType<N> next) const {
+		++slot.version;
+		slot.next = next;
+	}
 };
 
 template<typename N>
 // N models ForwardSlot 
 struct get_successor_obj {
-SizeType<N> operator()(N& slot) const {
-	return slot.next;
-}
+	SizeType<N> operator()(N& slot) const {
+		return slot.next;
+	}
 };
 
 template<typename N>
 // N models ForwardSlot 
 struct set_successor_obj {
-void operator()(N& slot, SizeType<N> next) const {
-	slot.next = next;
-}
+	void operator()(N& slot, SizeType<N> next) const {
+		slot.next = next;
+	}
 };
 
 
 template<typename N>
 // N models BidirectionalSlot 
 struct get_predecessor_obj {
-SizeType<N> operator()(N& slot) const {
-	return slot.prev;
-}
+	SizeType<N> operator()(N& slot) const {
+		return slot.prev;
+	}
 };
 
 template<typename N>
 // N models BidirectionalSlot
 struct set_predecessor_obj {
-void operator()(N& slot, SizeType<N> prev) const {
-	slot.prev = prev;
-}
+	void operator()(N& slot, SizeType<N> prev) const {
+		slot.prev = prev;
+	}
 };
 
 
 template<typename N>
 // N models VersionedForwardLinkedSlot
 struct versioned_set_successor_obj {
-void operator()(N& slot, SizeType<N> next) {
-	++slot.version;
-	slot.next = next;
-}
+	void operator()(N& slot, SizeType<N> next) {
+		++slot.version;
+		slot.next = next;
+	}
 };
 
 template<typename N>
 // N models ControlledForwardLinkedSlot
 struct controlled_set_successor_obj {
-const ValueType<N> *value;
+	const ValueType<N> *value;
 
-controlled_set_successor_obj(const ValueType<N> &value) : value(&value) {}
+	controlled_set_successor_obj(const ValueType<N> &value) : value(&value) {}
 
-void operator()(N& slot, SizeType<N> next) {
-	slot.next = next;
-	slot.value = *value;
-}
+	void operator()(N& slot, SizeType<N> next) {
+		slot.next = next;
+		slot.value = *value;
+	}
 };
 
 template<typename N>
 // N models VersionedControlledForwardLinkedSlot
 struct regulated_set_successor_obj {
-const ValueType<N> *value;
+	const ValueType<N> *value;
 
-regulated_set_successor_obj(const ValueType<N> &value) : value(&value) {}
+	regulated_set_successor_obj(const ValueType<N> &value) : value(&value) {}
 
-void operator()(N& slot, SizeType<N> next) {
-	slot.next = next;
-	++slot.version;
-	slot.value = *value;
-}
+	void operator()(N& slot, SizeType<N> next) {
+		slot.next = next;
+		++slot.version;
+		slot.value = *value;
+	}
 };
 
 
@@ -382,7 +382,7 @@ template<typename I, typename D>
 // D models Integral
 inline
 I next_iterator(I it, D diff) {
-return it + static_cast<IteratorDifferenceType<I>>(diff);
+	return it + static_cast<IteratorDifferenceType<I>>(diff);
 }
 
 template<typename I, typename D = IteratorDifferenceType<I>>
@@ -390,7 +390,7 @@ template<typename I, typename D = IteratorDifferenceType<I>>
 // D models Integral
 inline
 D iterator_distance(I it1, I it2) {
-return static_cast<D>(it2 - it1);
+	return static_cast<D>(it2 - it1);
 }
 
 
@@ -399,34 +399,34 @@ template<typename I, typename D>
 // D models Integral
 inline
 IteratorReferenceType<I> iterator_slot(I it, D diff) {
-return *next_iterator(it, diff);
+	return *next_iterator(it, diff);
 }
 
 template<typename S>
 // N models BidirectionalSlot
 struct bidirectional_slot_meta_positions {
-std::pair<S, S> empty;
-std::pair<S, S> filled;
+	std::pair<S, S> empty;
+	std::pair<S, S> filled;
 };
 
 
-// Default object for all controlled versions of "slot_map".
+// Default object for all controlled versions of "slot_list".
 // Returns default constructed object.
 template<typename T>
 struct get_empty {
-T operator()() { return T{}; }
+	T operator()() { return T{}; }
 };
 
 template<typename I>
 // I models integral
 constexpr bool is_over_breakoff(I capacity, I size) {
-return size > static_cast<I>(capacity * (5.f / 9.f));
+	return size > static_cast<I>(capacity * (5.f / 9.f));
 }
 
 template<typename I>
 // I models integral
 constexpr I grow_size(I size) {
-return static_cast<I>(size * 1.5f) + I{ 2 };
+	return static_cast<I>(size * 1.5f) + I{ 2 };
 }
 
 
@@ -438,27 +438,27 @@ template<typename I>
 // I models BidirectionalSlot_Iterator
 inline
 bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_filled(I first, const bidirectional_slot_meta_positions<SlotSizeType<I>> &pos, SlotSizeType<I> npos) {
-bidirectional_slot_meta_positions<SlotSizeType<I>> new_pos = pos;
+	bidirectional_slot_meta_positions<SlotSizeType<I>> new_pos = pos;
 
-const auto slot_pos = pos.empty.first;
-auto &slot = iterator_slot(first, slot_pos);
+	const auto slot_pos = pos.empty.first;
+	auto &slot = iterator_slot(first, slot_pos);
 
-if (pos.filled.first == npos) new_pos.filled.first = slot_pos;
-if (pos.filled.second != npos) set_successor(iterator_slot(first, pos.filled.second), slot_pos);
+	if (pos.filled.first == npos) new_pos.filled.first = slot_pos;
+	if (pos.filled.second != npos) set_successor(iterator_slot(first, pos.filled.second), slot_pos);
 
-if (pos.empty.second == pos.empty.first) {
-	new_pos.empty.second = npos;
-	new_pos.empty.first = npos;
-}
-else {
-	new_pos.empty.first = slot.next;
-}
-set_successor(slot, npos);
-set_predecessor(slot, pos.filled.second);
+	if (pos.empty.second == pos.empty.first) {
+		new_pos.empty.second = npos;
+		new_pos.empty.first = npos;
+	}
+	else {
+		new_pos.empty.first = slot.next;
+	}
+	set_successor(slot, npos);
+	set_predecessor(slot, pos.filled.second);
 
-new_pos.filled.second = slot_pos;
+	new_pos.filled.second = slot_pos;
 
-return new_pos;
+	return new_pos;
 }
 
 
@@ -470,31 +470,31 @@ inline
 bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_empty(I first, const bidirectional_slot_meta_positions<SlotSizeType<I>> &pos,
 	SlotSizeType<I> npos, SlotSizeType<I> filled_pos) {
 
-bidirectional_slot_meta_positions<SlotSizeType<I>> new_pos = pos;
-auto &slot = iterator_slot(first, filled_pos);
+	bidirectional_slot_meta_positions<SlotSizeType<I>> new_pos = pos;
+	auto &slot = iterator_slot(first, filled_pos);
 
-if (filled_pos == pos.filled.first) {
-	new_pos.filled.first = get_successor(slot);
-	if (new_pos.filled.first != npos)
-		set_predecessor(iterator_slot(first, new_pos.filled.first), npos);
-	else
-		new_pos.filled.second = npos;
-}
-else if (filled_pos == pos.filled.second) {
-	new_pos.filled.second = get_predecessor(slot);
-	set_successor(iterator_slot(first, new_pos.filled.first), npos);
-}
-else {
-	set_predecessor(iterator_slot(first, get_successor(slot)), get_predecessor(slot));
-	set_successor(iterator_slot(first, get_predecessor(slot)), get_successor(slot));
-}
+	if (filled_pos == pos.filled.first) {
+		new_pos.filled.first = get_successor(slot);
+		if (new_pos.filled.first != npos)
+			set_predecessor(iterator_slot(first, new_pos.filled.first), npos);
+		else
+			new_pos.filled.second = npos;
+	}
+	else if (filled_pos == pos.filled.second) {
+		new_pos.filled.second = get_predecessor(slot);
+		set_successor(iterator_slot(first, new_pos.filled.first), npos);
+	}
+	else {
+		set_predecessor(iterator_slot(first, get_successor(slot)), get_predecessor(slot));
+		set_successor(iterator_slot(first, get_predecessor(slot)), get_successor(slot));
+	}
 
-set_successor(slot, pos.empty.first);
-new_pos.empty.first = filled_pos;
-if (pos.empty.second == npos)
-	new_pos.empty.second = filled_pos;
+	set_successor(slot, pos.empty.first);
+	new_pos.empty.first = filled_pos;
+	if (pos.empty.second == npos)
+		new_pos.empty.second = filled_pos;
 
-return new_pos;
+	return new_pos;
 }
 
 
@@ -512,34 +512,34 @@ template<typename I, typename S, typename P>
 // P models BinaryPredicate : void operator()(ValueType<I> &, S);
 inline
 void forward_empty_all_slots_basis(I first, I last, S start_index, S npos, P set_successor) {
-if (first == last) return;
---last;
-while (first != last) {
-	set_successor(*first, ++start_index);
-	++first;
-}
-set_successor(*last, npos);
+	if (first == last) return;
+	--last;
+	while (first != last) {
+		set_successor(*first, ++start_index);
+		++first;
+	}
+	set_successor(*last, npos);
 }
 
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
 void forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
-forward_empty_all_slots_basis(first, last, start_index, npos, set_successor_obj<ValueType<I>>{});
+	forward_empty_all_slots_basis(first, last, start_index, npos, set_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
 void trivial_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
-forward_empty_all_slots_basis(first, last, start_index, npos, trivial_set_successor_obj<ValueType<I>>{});
+	forward_empty_all_slots_basis(first, last, start_index, npos, trivial_set_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
 void trivial_versioned_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
-forward_empty_all_slots_basis(first, last, start_index, npos, trivial_versioned_set_successor_obj<ValueType<I>>{});
+	forward_empty_all_slots_basis(first, last, start_index, npos, trivial_versioned_set_successor_obj<ValueType<I>>{});
 }
 
 
@@ -547,21 +547,21 @@ template<typename I>
 // I models ForwardSlot_Iterator
 inline
 void controlled_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos, const SlotValueType<I> &value) {
-forward_empty_all_slots_basis(first, last, start_index, npos, controlled_set_successor_obj<ValueType<I>>{ value });
+	forward_empty_all_slots_basis(first, last, start_index, npos, controlled_set_successor_obj<ValueType<I>>{ value });
 }
 
 template<typename I>
 // I models VersionedForwardSlot_Iterator
 inline
 void versioned_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
-forward_empty_all_slots_basis(first, last, start_index, npos, versioned_set_successor_obj<ValueType<I>>{});
+	forward_empty_all_slots_basis(first, last, start_index, npos, versioned_set_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models VersionedForwardSlot_Iterator
 inline
 void regulated_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos, const SlotValueType<I> &value) {
-forward_empty_all_slots_basis(first, last, start_index, npos, regulated_set_successor_obj<ValueType<I>>{ value });
+	forward_empty_all_slots_basis(first, last, start_index, npos, regulated_set_successor_obj<ValueType<I>>{ value });
 }
 
 template<typename I, typename P>
@@ -570,14 +570,14 @@ template<typename I, typename P>
 inline
 std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_slots_basis(I first, SlotSizeType<I> new_empty, I last,
 	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty_meta, SlotSizeType<I> npos, P set_successor) {
-if (empty_meta.second != npos)
-	set_successor(iterator_slot(first, empty_meta.second), new_empty);
+	if (empty_meta.second != npos)
+		set_successor(iterator_slot(first, empty_meta.second), new_empty);
 
-forward_empty_all_slots_basis(first + static_cast<DifferenceType<I>>(new_empty), last, new_empty, npos, set_successor);
+	forward_empty_all_slots_basis(first + static_cast<DifferenceType<I>>(new_empty), last, new_empty, npos, set_successor);
 
-const auto last_empty = static_cast<SlotSizeType<I>>(last - first - 1);
-return empty_meta.first != npos ? std::pair<SlotSizeType<I>, SlotSizeType<I>>{ empty_meta.first, last_empty } :
-	std::pair<SlotSizeType<I>, SlotSizeType<I>>{ new_empty, last_empty };
+	const auto last_empty = static_cast<SlotSizeType<I>>(last - first - 1);
+	return empty_meta.first != npos ? std::pair<SlotSizeType<I>, SlotSizeType<I>>{ empty_meta.first, last_empty } :
+		std::pair<SlotSizeType<I>, SlotSizeType<I>>{ new_empty, last_empty };
 }
 
 template<typename I>
@@ -585,7 +585,7 @@ template<typename I>
 inline
 std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_slots(I first, SlotSizeType<I> new_empty, I last,
 	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty_meta, SlotSizeType<I> npos) {
-return forward_empty_slots_basis(first, new_empty, last, empty_meta, npos, set_successor_obj<ValueType<I>>{});
+	return forward_empty_slots_basis(first, new_empty, last, empty_meta, npos, set_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
@@ -593,7 +593,7 @@ template<typename I>
 inline
 std::pair<SlotSizeType<I>, SlotSizeType<I>> trivial_forward_empty_slots(I first, SlotSizeType<I> new_empty, I last,
 	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty_meta, SlotSizeType<I> npos) {
-return forward_empty_slots_basis(first, new_empty, last, empty_meta, npos, trivial_set_successor_obj<ValueType<I>>{});
+	return forward_empty_slots_basis(first, new_empty, last, empty_meta, npos, trivial_set_successor_obj<ValueType<I>>{});
 }
 
 
@@ -613,16 +613,16 @@ template<typename I, typename S, typename P1, typename P2>
 // P2 models UnaryPredicate : S operator()(ValueType<I> &);
 inline
 S forward_empty_filled_slots_basis(I first, S empty, S filled, S npos, P1 set_successor, P2 get_successor) {
-if (filled == npos) return empty;
-do {
-	auto &slot = iterator_slot(first, filled);
-	const auto next = get_successor(slot);
-	set_successor(slot, empty);
-	empty = filled;
-	filled = next;
-} while (filled != npos);
+	if (filled == npos) return empty;
+	do {
+		auto &slot = iterator_slot(first, filled);
+		const auto next = get_successor(slot);
+		set_successor(slot, empty);
+		empty = filled;
+		filled = next;
+	} while (filled != npos);
 
-return empty;
+	return empty;
 }
 
 
@@ -631,28 +631,28 @@ template<typename I>
 // I models ForwardSlot_Iterator
 inline
 SlotSizeType<I> forward_empty_filled_slots(I first, SlotSizeType<I> empty, SlotSizeType<I> filled, SlotSizeType<I> npos) {
-return forward_empty_filled_slots_basis(first, empty, filled, npos, set_successor_obj<ValueType<I>>{}, get_successor_obj<ValueType<I>>{});
+	return forward_empty_filled_slots_basis(first, empty, filled, npos, set_successor_obj<ValueType<I>>{}, get_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
 SlotSizeType<I> controlled_forward_empty_filled_slots(I first, SlotSizeType<I> empty, SlotSizeType<I> filled, SlotSizeType<I> npos, const SlotValueType<I> &value) {
-return forward_empty_filled_slots_basis(first, empty, filled, npos, controlled_set_successor_obj<ValueType<I>>{value}, get_successor_obj<ValueType<I>>{});
+	return forward_empty_filled_slots_basis(first, empty, filled, npos, controlled_set_successor_obj<ValueType<I>>{value}, get_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models VersionedForwardSlot_Iterator
 inline
 SlotSizeType<I> versioned_forward_empty_filled_slots(I first, SlotSizeType<I> empty, SlotSizeType<I> filled, SlotSizeType<I> npos) {
-return forward_empty_filled_slots_basis(first, empty, filled, npos, versioned_set_successor_obj<ValueType<I>>{}, get_successor_obj<ValueType<I>>{});
+	return forward_empty_filled_slots_basis(first, empty, filled, npos, versioned_set_successor_obj<ValueType<I>>{}, get_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models VersionedForwardSlot_Iterator
 inline
 SlotSizeType<I> regulated_forward_empty_filled_slots(I first, SlotSizeType<I> empty, SlotSizeType<I> filled, SlotSizeType<I> npos, const SlotValueType<I> &value) {
-return forward_empty_filled_slots_basis(first, empty, filled, npos, regulated_set_successor_obj<ValueType<I>>{value}, get_successor_obj<ValueType<I>>{});
+	return forward_empty_filled_slots_basis(first, empty, filled, npos, regulated_set_successor_obj<ValueType<I>>{value}, get_successor_obj<ValueType<I>>{});
 }
 
 // Empties slots in order based on positions in range "first_position" to "last_position".
@@ -665,13 +665,13 @@ template<typename I1, typename I2, typename P>
 // P1 models BinaryPredicate : void operator()(ValueType<I> &, S);
 inline
 SlotSizeType<I1> forward_empty_filled_dense_slots_basis(I1 &first_position, I1 last_position, I2 &first_slot, SlotSizeType<I1> empty, P p) {
-while (first_position != last_position) {
-	const auto filled = *first_position;
-	auto &slot = iterator_slot(first_slot, filled);
-	p(slot, empty);
-	empty = filled;
-}
-return empty;
+	while (first_position != last_position) {
+		const auto filled = *first_position;
+		auto &slot = iterator_slot(first_slot, filled);
+		p(slot, empty);
+		empty = filled;
+	}
+	return empty;
 }
 
 
@@ -680,7 +680,7 @@ template<typename I1, typename I2>
 // I2 models TrivialSlot_Iterator
 inline
 SlotSizeType<I1> forward_empty_filled_dense_slots(I1 &first_position, I1 last_position, I2 &first_slot, SlotSizeType<I1> empty) {
-return forward_empty_filled_dense_slots_basis(first_position, last_position, first_slot, empty, trivial_set_successor_obj<ValueType<I2>>{});
+	return forward_empty_filled_dense_slots_basis(first_position, last_position, first_slot, empty, trivial_set_successor_obj<ValueType<I2>>{});
 }
 
 template<typename I1, typename I2>
@@ -688,7 +688,7 @@ template<typename I1, typename I2>
 // I2 models TrivialSlot_Iterator
 inline
 SlotSizeType<I1> versioned_forward_empty_filled_dense_slots(I1 &first_position, I1 last_position, I2 &first_slot, SlotSizeType<I1> empty) {
-return forward_empty_filled_dense_slots_basis(first_position, last_position, first_slot, empty, trivial_versioned_set_successor_obj<ValueType<I2>>{});
+	return forward_empty_filled_dense_slots_basis(first_position, last_position, first_slot, empty, trivial_versioned_set_successor_obj<ValueType<I2>>{});
 }
 
 
@@ -696,13 +696,13 @@ return forward_empty_filled_dense_slots_basis(first_position, last_position, fir
 template<typename T,
 typename S = default_size_type,
 typename A = default_allocator_type<T>>
-class slot_map {
+class slot_list {
 public:
 	using value_type = T;
 	using size_type = S;
 	using id_type = size_type;
-	using slot_type = slot_type<value_type, size_type>;
-	using container_type = slot_map_container_type<slot_type, A>;
+	using slot_type = sl_slot_type<value_type, size_type>;
+	using container_type = sl_container_type<slot_type, A>;
 
 private:
 	static constexpr auto npos = max_type_value<size_type>();
@@ -747,13 +747,13 @@ private:
 
 
 public:
-	slot_map(AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+	slot_list(AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 		slots(std::move(alloc)),
 		filled_size(size_type(0)),
 		pos({ { npos, npos },{ npos, npos } })
 	{}
 
-	slot_map(const AllocatorType<container_type> &alloc) :
+	slot_list(const AllocatorType<container_type> &alloc) :
 		slots(alloc),
 		filled_size(size_type(0)),
 		pos({ { npos, npos },{ npos, npos } })
@@ -827,14 +827,14 @@ template<typename T,
 typename E = get_empty<T>,
 typename S = default_size_type,
 typename A = default_allocator_type<T>>
-class controlled_slot_map {
+class controlled_slot_list {
 public:
 	using value_type = T;
 	using get_empty_type = E;
 	using size_type = S;
 	using id_type = size_type;
-	using slot_type = controlled_slot_type<value_type, size_type>;
-	using container_type = slot_map_container_type<slot_type, A>;
+	using slot_type = sl_controlled_slot_type<value_type, size_type>;
+	using container_type = sl_container_type<slot_type, A>;
 
 
 private:
@@ -883,21 +883,21 @@ private:
 
 
 public:
-	controlled_slot_map(get_empty_type &&get_empty_obj = get_empty<value_type>{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+	controlled_slot_list(get_empty_type &&get_empty_obj = get_empty<value_type>{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 		slots(std::move(alloc)),
 		filled_size(size_type(0)),
 		get_empty_obj(std::move(get_empty_obj)),
 		pos({ { npos, npos },{ npos, npos } })
 	{}
 
-	controlled_slot_map(const get_empty_type &get_empty_obj, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+	controlled_slot_list(const get_empty_type &get_empty_obj, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 		slots(std::move(alloc)),
 		filled_size(size_type(0)),
 		get_empty_obj(get_empty_obj),
 		pos({ { npos, npos },{ npos, npos } })
 	{}
 
-	controlled_slot_map(const get_empty_type &get_empty_obj, const AllocatorType<container_type> &alloc) :
+	controlled_slot_list(const get_empty_type &get_empty_obj, const AllocatorType<container_type> &alloc) :
 		slots(alloc),
 		filled_size(size_type(0)),
 		get_empty_obj(get_empty_obj),
@@ -973,14 +973,14 @@ template<typename T,
 typename V = default_version_type,
 typename S = default_size_type,
 typename A = default_allocator_type<T>>
-class versioned_slot_map {
+class versioned_slot_list {
 public:
 	using value_type = T;
 	using version_type = V;
 	using size_type = S;
 	using id_type = std::pair<size_type, version_type>;
-	using slot_type = versioned_slot_type<value_type, size_type, version_type>;
-	using container_type = slot_map_container_type<slot_type, A>;
+	using slot_type = sl_versioned_slot_type<value_type, size_type, version_type>;
+	using container_type = sl_container_type<slot_type, A>;
 
 private:
 	static constexpr auto npos = max_type_value<size_type>();
@@ -1037,13 +1037,13 @@ private:
 	}
 
 public:
-	versioned_slot_map(AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+	versioned_slot_list(AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 		slots(std::move(alloc)),
 		filled_size(size_type(0)),
 		pos({ { npos, npos },{ npos, npos } })
 	{}
 
-	versioned_slot_map(const AllocatorType<container_type> &alloc) :
+	versioned_slot_list(const AllocatorType<container_type> &alloc) :
 		slots(alloc),
 		filled_size(size_type(0)),
 		pos({ { npos, npos },{ npos, npos } })
@@ -1123,15 +1123,15 @@ typename E = get_empty<T>,
 typename V = default_version_type,
 typename S = default_size_type,
 typename A = default_allocator_type<T>>
-class regulated_slot_map {
+class regulated_slot_list {
 public:
 	using value_type = T;
 	using size_type = S;
 	using version_type = V;
 	using get_empty_type = E;
 	using id_type = std::pair<size_type, version_type>;
-	using slot_type = regulated_slot_type<value_type, size_type, version_type>;
-	using container_type = slot_map_container_type<slot_type, A>;
+	using slot_type = sl_regulated_slot_type<value_type, size_type, version_type>;
+	using container_type = sl_container_type<slot_type, A>;
 
 private:
 	static constexpr auto npos = max_type_value<size_type>();
@@ -1192,21 +1192,21 @@ private:
 	}
 
 public:
-	regulated_slot_map(get_empty_type &&get_empty_obj = get_empty<value_type>{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+	regulated_slot_list(get_empty_type &&get_empty_obj = get_empty<value_type>{}, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 		slots(std::move(alloc)),
 		filled_size(size_type{ 0 }),
 		get_empty_obj(std::move(get_empty_obj)),
 		pos({ { npos, npos },{ npos, npos } })
 	{}
 
-	regulated_slot_map(const get_empty_type &get_empty_obj, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
+	regulated_slot_list(const get_empty_type &get_empty_obj, AllocatorType<container_type> &&alloc = AllocatorType<container_type>{}) :
 		slots(std::move(alloc)),
 		filled_size(size_type{ 0 }),
 		get_empty_obj(get_empty_obj),
 		pos({ { npos, npos },{ npos, npos } })
 	{}
 
-	regulated_slot_map(const get_empty_type &get_empty_obj, const AllocatorType<container_type> &alloc) :
+	regulated_slot_list(const get_empty_type &get_empty_obj, const AllocatorType<container_type> &alloc) :
 		slots(alloc),
 		filled_size(size_type{ 0 }),
 		get_empty_obj(get_empty_obj),
@@ -1287,16 +1287,16 @@ public:
 template<typename T,
 typename S = default_size_type,
 typename A = default_allocator_type<T>>
-class dense_map {
+class slot_map {
 public:
 	using value_type = T;
 	using size_type = S;
 	using id_type = size_type;
 
-	using slot_type = dense_slot_type<size_type>;
-	using id_slot_container_type = dense_map_id_slot_container_type<slot_type, A>;
-	using value_container_type = dense_map_value_container_type<value_type, A>;
-	using id_pos_container_type = dense_map_id_pos_container_type<size_type, A>;
+	using slot_type = sm_slot_type<size_type>;
+	using id_slot_container_type = sm_id_slot_container_type<slot_type, A>;
+	using value_container_type = sm_value_container_type<value_type, A>;
+	using id_pos_container_type = sm_id_pos_container_type<size_type, A>;
 
 	using difference_type = typename value_container_type::difference_type;
 	using iterator = typename value_container_type::iterator;
@@ -1383,7 +1383,7 @@ private:
 	}
 
 public:
-	dense_map(AllocatorType<id_slot_container_type> &&id_slots_allocator = AllocatorType<id_slot_container_type>{},
+	slot_map(AllocatorType<id_slot_container_type> &&id_slots_allocator = AllocatorType<id_slot_container_type>{},
 		AllocatorType<value_container_type> &&value_allocator = AllocatorType<value_container_type>{},
 		AllocatorType<id_pos_container_type> &&is_positions_allocator = AllocatorType<id_pos_container_type>{}) :
 		id_slots(std::move(id_slots_allocator)),
@@ -1393,7 +1393,7 @@ public:
 
 	}
 
-	dense_map(const AllocatorType<id_slot_container_type> &id_slots_allocator,
+	slot_map(const AllocatorType<id_slot_container_type> &id_slots_allocator,
 		const AllocatorType<value_container_type> &value_allocator,
 		const AllocatorType<id_pos_container_type> &is_positions_allocator) :
 		id_slots(id_slots_allocator),
@@ -1552,17 +1552,17 @@ template<typename T,
 typename S = default_size_type,
 typename V = default_version_type,
 typename A = default_allocator_type<T>>
-class versioned_dense_map {
+class versioned_slot_map {
 public:
 	using value_type = T;
 	using size_type = S;
 	using version_type = V;
 	using id_type = std::pair<size_type, version_type>;
 
-	using slot_type = versioned_dense_slot_type<size_type, version_type>;
-	using id_slot_container_type = dense_map_id_slot_container_type<slot_type, A>;
-	using value_container_type = dense_map_value_container_type<value_type, A>;
-	using id_pos_container_type = dense_map_id_pos_container_type<size_type, A>;
+	using slot_type = sm_versioned_slot_type<size_type, version_type>;
+	using id_slot_container_type = sm_id_slot_container_type<slot_type, A>;
+	using value_container_type = sm_value_container_type<value_type, A>;
+	using id_pos_container_type = sm_id_pos_container_type<size_type, A>;
 
 	using difference_type = typename value_container_type::difference_type;
 	using iterator = typename value_container_type::iterator;
@@ -1651,7 +1651,7 @@ private:
 	}
 
 public:
-	versioned_dense_map(AllocatorType<id_slot_container_type> &&id_slots_allocator = AllocatorType<id_slot_container_type>{},
+	versioned_slot_map(AllocatorType<id_slot_container_type> &&id_slots_allocator = AllocatorType<id_slot_container_type>{},
 		AllocatorType<value_container_type> &&value_allocator = AllocatorType<value_container_type>{},
 		AllocatorType<id_pos_container_type> &&id_positions_allocator = AllocatorType<id_pos_container_type>{}) :
 		id_slots(id_slots_allocator),
@@ -1661,7 +1661,7 @@ public:
 
 	}
 
-	versioned_dense_map(const AllocatorType<id_slot_container_type> &id_slots_allocator,
+	versioned_slot_map(const AllocatorType<id_slot_container_type> &id_slots_allocator,
 		const AllocatorType<value_container_type> &value_allocator,
 		const AllocatorType<id_pos_container_type> &id_positions_allocator) :
 		id_slots(id_slots_allocator),

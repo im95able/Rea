@@ -146,8 +146,8 @@
     <ClInclude Include="rea_test_base.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="rea_test_dense_map.cpp" />
     <ClCompile Include="rea_test_slot_map.cpp" />
+    <ClCompile Include="rea_test_slot_list.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

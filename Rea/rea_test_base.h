@@ -2,17 +2,17 @@
 
 #include <iostream>
 
-//#define TEST_SLOT_MAP 
-//#define TEST_CONTROLLED_SLOT_MAP 
-//#define TEST_VERSIONED_SLOT_MAP 
-//#define TEST_REGULATED_SLOT_MAP 
-//#define TEST_DENSE_MAP 
-#define TEST_VERSIONED_DENSE_MAP 
+//#define TEST_SLOT_LIST
+//#define TEST_CONTROLLED_SLOT_LIST
+//#define TEST_VERSIONED_SLOT_LIST
+//#define TEST_REGULATED_SLOT_LIST
+#define TEST_SLOT_MAP
+//#define TEST_VERSIONED_SLOT_MAP
 
-#if defined(TEST_DENSE_MAP) || defined(TEST_VERSIONED_DENSE_MAP) 
-#define TEST_DENSE
+#if defined(TEST_SLOT_MAP) || defined(TEST_VERSIONED_SLOT_MAP) 
+#define _TEST_SLOT_MAP
 #else
-#define TEST_SLOT
+#define _TEST_SLOT_LIST
 #endif
 
 
