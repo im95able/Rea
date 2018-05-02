@@ -1,7 +1,7 @@
 # Rea
 Rea is a lightweight library of data structures implemented in C++11, designed for constant time insertion, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
-There are 6 data structures included in this library : `slot_list`, `controlled_slot_list`, `versioned_slot_list`, `regulated_slot_list`, `slot_map` and `versioned_slot_map`. The two key data structures are `slot_list` and `slot_map`: the other four are only simple variations of those 2. 
+There are 6 data structures included in this library : `slot_list`, `controlled_slot_list`, `versioned_slot_list`, `regulated_slot_list`, `slot_map` and `versioned_slot_map`. The two key data structures are `slot_list` and `slot_map`: the other four are only simple variations of those two. 
 
 # SlotList 
 Use SlotList when you have to insert, erase, or look up data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteration, use SlotMap.
@@ -14,7 +14,7 @@ Whenever you insert a value into the SlotList you get its id, which you can late
 While you can use the ids to iterate over all stored objects, it's not advisable to do it repeatedly: you might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use SlotMap.
 
 ## Usage
-All SlotLists have the same first, and the last 2 template arguments.
+All SlotLists have the same first, and the last two template arguments.
 ```cpp
 some_slot_list<T,                      // value_type 
                .
@@ -203,7 +203,7 @@ As stated earlier the main difference between the SlotList and the SlotMap is in
 
 Considering all of the users objects are kept in a contiguous array, and all erased objects are destructed, there is no need for controlled or regulated version of SlotMap.
 
-All SlotMaps, just like all SlotLists, have the same first, and the last 2 template arguments.
+All SlotMaps, just like all SlotLists, have the same first, and the last two template arguments.
 ```cpp
 some_slot_map<T,                      // value_type 
               .
