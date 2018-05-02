@@ -7,9 +7,7 @@ There are 6 data structures included in this library : `slot_list`, `controlled_
 Use SlotList when you have to insert, erase, or look up data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteration, use SlotMap.
 
 ## Implementation
-SlotList internally stores its objects in some RandomAccessContainer (by default `std::deque`). Once you erase an object from SlotList, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last emptied slot.
-The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the 
-internal container from `std::deque` to some other container.
+SlotList internally stores its objects in some RandomAccessContainer (by default `std::deque`). Once you erase an object from it, the slot where that object used to reside becomes available for reuse. A free list of all empty slots is kept. The next object you insert will be put in the last emptied slot. The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the internal container from `std::deque` to some other container.
 
 Whenever you insert a value into the SlotList you get its id, which you can later use to access that object. "id" is an index with or without a version count in case of the version variatons of SlotLists and DenseMaps. More on that later on. That index is what allows us to access the objects in constant time.
 
