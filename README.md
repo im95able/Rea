@@ -12,7 +12,7 @@ SlotMap internally stores its objects in some RandomAccessContainer (by default 
 The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the 
 internal container from `std::deque` to some other container.
 
-Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. Id is either just and index or an index and a version count in case of the version variatons of SlotMaps and DenseMaps. More on that later on. That index is what allows us to acces the object in constant time.
+Whenever you insert a value into the SlotMap you get its id, which you can later use to access that object. "id" is an index with or without a version count in case of the version variatons of SlotMaps and DenseMaps. More on that later on. That index is what allows us to access the objects in constant time.
 
 While you can use the ids to iterate over all stored objects, it's not advisable to do it repeatedly: you might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use DenseMap.
 
@@ -81,11 +81,9 @@ int main() {
    }
    
    // lookup
-   for(auto id : ids) {
-      if(sm.id_is_valid(id)) {
-         std::cout << sm.id_value(id).first << std::endl;
-      }
-   }
+   for(auto id : ids) 
+      std::cout << sm.id_value(id).first << std::endl;
+   
    
    // iteration
    for(auto id = sm.id_begin(); !sm.id_is_end(id); id = sm.id_next(id)) 
@@ -100,7 +98,7 @@ Objects which you erase are not destroyed, only "marked" as empty, so they can b
 To solve that issue, controlled_slot_map is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots (it's defaulted to a `rea::get_empty` functor which returns a default constructed object).
 
 ```cpp
-rea::controlled_slot_map<T,                     // value_type
+rea::controlled_slot_map<T,                      // value_type
                          E = rea::get_empty<T>,  // get_empty_type
                          S = std::size_t,        // size_type
                          A = std::allocator<T>>  // allocator_type
@@ -202,10 +200,10 @@ DenseMap is internally implemented as 2 std::vectors and a slot_map like data st
 
 Now we have a problem though. The slot which pointed to the last object inside *ValueContainer* now points to past the end object. In order to find that slot and update it to point to a new location, we introduce the *IDPosContainer*.
 
-*IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object od *ValueContainer*. Once the past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of. In that way all lookup operations are done in constant time.
+*IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object of *ValueContainer*. Once past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of *IDSlotContainer*. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used (by default std::vector::iterator, as with SlotMap you can change the internal containers, "Discussion" section shows how to do that).
+As stated earlier the main difference between the SlotMap and the DenseMap is in iteration. It's not possible to iterate through the objects stored in DenseMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used (by default std::vector::iterator, as with SlotMap you can change the internal containers, "Discussion" section shows how to do that). 
 
 Considering all of the users objects are kept in a contiguous array, and all erased objects are destructed, there is no need for controlled or regulated version of DenseMap.
 
