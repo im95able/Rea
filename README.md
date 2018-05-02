@@ -116,7 +116,7 @@ rea::controlled_slot_list<double, set_empty_double, std::unit16_t> c_sl(set_empt
 
 
 ### variation 3 : versioned_slot_list
-If, for instance, you are erasing objects inside the SlotList from 2 different parts of your program, ids might no longer
+If, for instance, you are erasing and accessing objects of the SlotList from 2 different parts of your program, ids might no longer
 point to correct objects, but to either erased or objects filled with different values than what the id originally pointed to.
 
 To solve that issue, `rea::versioned_slot_list` is introduced. It takes as a second template argument an IntegralType, which will represent the current version of the slot (default is `std::size_t`). Each time an object is erased, the slot which contains that object increases its version count by 1.
