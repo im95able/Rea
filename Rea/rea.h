@@ -227,28 +227,28 @@ using sm_versioned_slot_type = versioned_trivial_slot<S, V>;
 template<typename N, typename A>
 // N models Slot
 // A models Allocator
-// slot_list_container_type models SlotContainer
+// sl_container_type models SlotContainer
 using sl_container_type = std::deque<N, AllocatorRebindType<A, N>>;
 
 // Container which will be used to store values of "slot_map" 
 template<typename T, typename A>
 // T models SemiRegular
 // A models Allocator
-// slot_list_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
+// sm_value_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
 using sm_value_container_type = std::vector<T, A>;
 
 // Container which will be used to store id slot indices of "slot_map", 
 template<typename S, typename A>
 // S models Integral
 // A models Allocator
-// slot_list_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
+// sm_id_pos_container_type models DenseContainer(E.g std::deque can't be use because it doesn't have reserve method)
 using sm_id_pos_container_type = std::vector<S, AllocatorRebindType<A, S>>;
 
 // Container which will be used to store id slots of "slot_map", 
 template<typename N, typename A>
 // N models Slot
 // A models Allocator
-// slot_list_container_type models SlotContainer
+// sm_id_slot_container_type models SlotContainer
 using sm_id_slot_container_type = std::vector<N, AllocatorRebindType<A, N>>;
 
 
