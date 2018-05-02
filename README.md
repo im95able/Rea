@@ -92,7 +92,7 @@ int main() {
 
 
 ### variation 2 : controlled_slot_list
-Objects which you erase are not destroyed, only "marked" as empty, so they can be reassigned to in the future. If you are storing objects which themselves are holding some resources (e.g. a pointer to some allocated memory) this could be problematic, beacuse you won't be able to release that memory until the entire SlotMap is destroyed or another value is assigned to that object. 
+Objects which you erase are not destroyed, only "marked" as empty, so they can be reassigned to in the future. If you are storing objects which themselves are holding some resources (e.g. a pointer to some allocated memory) this could be problematic, beacuse you won't be able to release that memory until the entire SlotList is destroyed or another value is assigned to that object. 
 
 To solve that issue, `rea::controlled_slot_list` is introduced. Its second template argument is a functor, which returns a value to be assigned to all empty slots (it's defaulted to a `rea::get_empty` functor which returns a default constructed object).
 
@@ -112,13 +112,13 @@ struct set_empty_double() {
    double value;
 }
 
-rea::controlled_slot_list<double, set_empty_double, std::unit16_t> c_sm(set_empty_double{3.14159});
+rea::controlled_slot_list<double, set_empty_double, std::unit16_t> c_sl(set_empty_double{3.14159});
 ```
 
 
 
 ### variation 3 : versioned_slot_list
-If, for instance, you are erasing objects inside the SlotMap from 2 different parts of your program, ids might no longer
+If, for instance, you are erasing objects inside the SlotList from 2 different parts of your program, ids might no longer
 point to correct objects, but to either erased or objects filled with different values than what the id originally pointed to.
 
 To solve that issue, `rea::versioned_slot_list` is introduced. It takes as a second template argument an IntegralType, which will represent the current version of the slot (default is `std::size_t`). Each time an object is erased, the slot which contains that object increases its version count by 1.
@@ -164,11 +164,11 @@ int main() {
 If you need both the ability to set an empty value and to keep a version count, use `rea::regulated_slot_list`. Its second template argument is functor which returns an empty value, and its third is an IntegralType to be used for versioning. They are defaulted same as `rea::controlled_slot_list` and `rea::versiond_slot_list`.
 
 ```cpp
-rea::versioned_slot_map<T,                      // value_type
-                        E, = rea::get_empty<T>  // get_empty_type
-                        V = std::size_t,        // version_type
-                        S = std::size_t,        // size_type
-                        A = std::allocator<T>>  // allocator_type
+rea::versioned_slot_list<T,                      // value_type
+                         E, = rea::get_empty<T>  // get_empty_type
+                         V = std::size_t,        // version_type
+                         S = std::size_t,        // size_type
+                         A = std::allocator<T>>  // allocator_type
 ```
 Here, slots store same things as in the `rea::version_slot_list`.
 
@@ -179,7 +179,7 @@ struct get_empty_string {
    }
 }
 
-rea::regulated_slot_list<std::string, get_empty_string> sm_strings;
+rea::regulated_slot_list<std::string, get_empty_string> sl_strings;
 ```
 
 
@@ -201,7 +201,7 @@ Now we have a problem though. The slot which pointed to the last object inside *
 *IDPosContainer* stores indices of *IDSlotContainer* slots, which correspond to objects stored *ValueContainer*. E.g., third object of *IDPosContainer* is an index of an *IDSlotContainer* slot, and that slot points to the third object of *ValueContainer*. Once past the end object is moved to the erased location, its index inside *IDSlotContainer* is also moved to the corresponding location of *IDSlotContainer*. In that way all lookup operations are done in constant time.
 
 ## Usage
-As stated earlier the main difference between the SlotList and the SlotMap is in iteration. It's not possible to iterate through the objects stored in SlotMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used (by default `std::vector::iterator`, as with SlotList you can change the internal containers, "Discussion" section shows how to do that). 
+As stated earlier the main difference between the SlotList and the SlotMap is in iteration. It's not possible to iterate through the objects stored in SlotMap using their ids. IDs can only be used for lookup. For iteration regular RandomAccess iterators are used (by default `std::vector::iterator`. As with SlotList you can change the internal containers. "Discussion" section shows how to do that). 
 
 Considering all of the users objects are kept in a contiguous array, and all erased objects are destructed, there is no need for controlled or regulated version of SlotMap.
 
