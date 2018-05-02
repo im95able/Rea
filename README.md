@@ -184,7 +184,7 @@ rea::regulated_slot_list<std::string, get_empty_string> sl_strings;
 # SlotMap
 If like in the SlotList you need constant time insertion, removal, and lookup, as well as cache friendly iteration through a contiguous array, use SlotMap.
 
-Implementation details are given below, although there is a [video](https://www.youtube.com/watch?v=SHaAR7XPtNU) which explains exactly what this data structure is. If you've seen it, "Implementation" section won't give you any more details and could be skipped.
+Implementation details are given below, although there is a [video](https://www.youtube.com/watch?v=SHaAR7XPtNU) which explains exactly what this data structure is. Precisely the video is describing what's called in this library `rea::versioned_slot_map`. If you've seen it, "Implementation" section won't give you any more details and could be skipped.
 
 ## Implementation
 SlotMap is internally implemented as 2 std::vectors and a slot_list like data structure.
