@@ -23,7 +23,7 @@ some_slot_list<T,                      // value_type
                S = std::size_t,        // size_type 
                A = std::allocator<T>>; // allocator_type 
 ```
-Considering that each slot will store two objects of "size_type" type as well as the single object of "value_type", if you know in advance the maximum size of the container, you might want to restrict how much space slots take up by choosing a smaller "size_type" which can still be used to reference all objects in the container.
+Each slot will store two objects of "size_type" type as well as the single object of "value_type". In a sense each slot acts as a node of a doubly linked list. Knowing that and knowing the maximum number of objects which will be stored, you might want to restrict how much space slots take up by choosing a smaller "size_type". The behavior is undefined if the size of the SlotList grows beyond the maximum value of "size_type".
 
 Template arguments for all SlotList variations are explained below.
 
