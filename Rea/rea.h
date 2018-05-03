@@ -29,6 +29,7 @@ SOFTWARE.
 #include <deque>
 #include <utility>
 #include <memory>
+#include <algorithm>
 
 
 namespace rea {
@@ -305,10 +306,19 @@ struct trivial_set_successor_obj {
 
 template<typename N>
 // N models TrivialSlot 
-struct trivial_versioned_set_successor_obj {
+struct versioned_trivial_set_successor_obj {
 	void operator()(N& slot, SizeType<N> next) const {
 		++slot.version;
-		slot.next = next;
+		slot.value = next;
+	}
+};
+
+template<typename N>
+// N models TrivialSlot 
+struct versioned_trivial_set_successor_resetter_obj {
+	void operator()(N& slot, SizeType<N> next) const {
+		slot.version = min_type_value<VersionType<N>>();
+		slot.value = next;
 	}
 };
 
@@ -347,7 +357,7 @@ struct set_predecessor_obj {
 
 
 template<typename N>
-// N models VersionedForwardLinkedSlot
+// N models VersionedForwardSlot
 struct versioned_set_successor_obj {
 	void operator()(N& slot, SizeType<N> next) {
 		++slot.version;
@@ -356,7 +366,24 @@ struct versioned_set_successor_obj {
 };
 
 template<typename N>
-// N models ControlledForwardLinkedSlot
+// N models VersionedForwardSlot
+struct versioned_set_successor_resetter_obj {
+	void operator()(N& slot, SizeType<N> next) {
+		slot.version = min_type_value<VersionType<N>>();
+		slot.next = next;
+	}
+};
+
+template<typename N>
+// N models VersionedSlot
+struct resetter_obj {
+	void operator()(N& slot) {
+		slot.version = min_type_value<VersionType<N>>();
+	}
+};
+
+template<typename N>
+// N models ControlledForwardSlot
 struct controlled_set_successor_obj {
 	const ValueType<N> *value;
 
@@ -369,7 +396,7 @@ struct controlled_set_successor_obj {
 };
 
 template<typename N>
-// N models VersionedControlledForwardLinkedSlot
+// N models VersionedControlledForwardSlot
 struct regulated_set_successor_obj {
 	const ValueType<N> *value;
 
@@ -378,6 +405,20 @@ struct regulated_set_successor_obj {
 	void operator()(N& slot, SizeType<N> next) {
 		slot.next = next;
 		++slot.version;
+		slot.value = *value;
+	}
+};
+
+template<typename N>
+// N models VersionedControlledForwardSlot
+struct regulated_set_successor_resetter_obj {
+	const ValueType<N> *value;
+
+	regulated_set_successor_resetter_obj(const ValueType<N> &value) : value(&value) {}
+
+	void operator()(N& slot, SizeType<N> next) {
+		slot.next = next;
+		slot.version = min_type_value<VersionType<N>>();
 		slot.value = *value;
 	}
 };
@@ -599,8 +640,15 @@ void trivial_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_inde
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
-void trivial_versioned_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
-	forward_empty_all_slots_basis(first, last, start_index, npos, trivial_versioned_set_successor_obj<ValueType<I>>{});
+void versioned_trivial_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
+	forward_empty_all_slots_basis(first, last, start_index, npos, versioned_trivial_set_successor_obj<ValueType<I>>{});
+}
+
+template<typename I>
+// I models ForwardSlot_Iterator
+inline
+void versioned_trivial_forward_empty_and_reset_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
+	forward_empty_all_slots_basis(first, last, start_index, npos, versioned_trivial_set_successor_resetter_obj<ValueType<I>>{});
 }
 
 
@@ -621,15 +669,38 @@ void versioned_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_in
 template<typename I>
 // I models VersionedForwardSlot_Iterator
 inline
+void versioned_forward_empty_and_reset_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos) {
+	forward_empty_all_slots_basis(first, last, start_index, npos, versioned_set_successor_resetter_obj<ValueType<I>>{});
+}
+
+template<typename I>
+// I models VersionedForwardSlot_Iterator
+inline
 void regulated_forward_empty_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos, const SlotValueType<I> &value) {
 	forward_empty_all_slots_basis(first, last, start_index, npos, regulated_set_successor_obj<ValueType<I>>{ value });
 }
+
+template<typename I>
+// I models VersionedForwardSlot_Iterator
+inline
+void regulated_forward_empty_and_reset_all_slots(I first, I last, SlotSizeType<I> start_index, SlotSizeType<I> npos, const SlotValueType<I> &value) {
+	forward_empty_all_slots_basis(first, last, start_index, npos, regulated_set_successor_resetter_obj<ValueType<I>>{ value });
+}
+
+
+template<typename I>
+// I models VersionedSlot_Iterator
+inline
+void versioned_reset(I first, I last) {
+	std::for_each(first, last, resetter_obj<ValueType<I>>{});
+}
+
 
 template<typename I, typename P>
 // I models ForwardSlot_Iterator
 // P models BinaryPredicate : void operator()(ValueType<I> &, S);
 inline
-std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_slots_basis(I first, SlotSizeType<I> new_empty, I last,
+std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_all_slots_with_meta_basis(I first, SlotSizeType<I> new_empty, I last,
 	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty, SlotSizeType<I> npos, P set_successor) {
 	if (empty.second != npos)
 		set_successor(iterator_slot(first, empty.second), new_empty);
@@ -644,17 +715,17 @@ std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_slots_basis(I first, S
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
-std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_slots(I first, SlotSizeType<I> new_empty, I last,
-	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty_meta, SlotSizeType<I> npos) {
-	return forward_empty_slots_basis(first, new_empty, last, empty_meta, npos, set_successor_obj<ValueType<I>>{});
+std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_all_slots_with_meta(I first, SlotSizeType<I> new_empty, I last,
+	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty, SlotSizeType<I> npos) {
+	return forward_empty_all_slots_with_meta_basis(first, new_empty, last, empty, npos, set_successor_obj<ValueType<I>>{});
 }
 
 template<typename I>
 // I models ForwardSlot_Iterator
 inline
-std::pair<SlotSizeType<I>, SlotSizeType<I>> trivial_forward_empty_slots(I first, SlotSizeType<I> new_empty, I last,
-	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty_meta, SlotSizeType<I> npos) {
-	return forward_empty_slots_basis(first, new_empty, last, empty_meta, npos, trivial_set_successor_obj<ValueType<I>>{});
+std::pair<SlotSizeType<I>, SlotSizeType<I>> trivial_forward_empty_all_slots_with_meta(I first, SlotSizeType<I> new_empty, I last,
+	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty, SlotSizeType<I> npos) {
+	return forward_empty_all_slots_with_meta_basis(first, new_empty, last, empty, npos, trivial_set_successor_obj<ValueType<I>>{});
 }
 
 
@@ -716,6 +787,7 @@ SlotSizeType<I> regulated_forward_empty_filled_slots(I first, SlotSizeType<I> em
 	return forward_empty_filled_slots_basis(first, empty, filled, npos, regulated_set_successor_obj<ValueType<I>>{value}, get_successor_obj<ValueType<I>>{});
 }
 
+
 // Empties slots in order based on positions in range "first_position" to "last_position".
 // Does array traversal for positions, but jumps all over memory for slots.
 // Unlike the previous emptying functions, this one should always only do relinking.
@@ -749,7 +821,7 @@ template<typename I1, typename I2>
 // I2 models TrivialSlot_Iterator
 inline
 SlotSizeType<I1> versioned_forward_empty_filled_dense_slots(I1 &first_position, I1 last_position, I2 &first_slot, SlotSizeType<I1> empty) {
-	return forward_empty_filled_dense_slots_basis(first_position, last_position, first_slot, empty, trivial_versioned_set_successor_obj<ValueType<I2>>{});
+	return forward_empty_filled_dense_slots_basis(first_position, last_position, first_slot, empty, versioned_trivial_set_successor_obj<ValueType<I2>>{});
 }
 
 
@@ -776,7 +848,7 @@ private:
 	void _reserve(size_type s) {
 		size_type prev_size = slots.size();
 		slots.resize(s);
-		pos.empty = forward_empty_slots(slots.begin(), prev_size, slots.end(), pos.empty, npos);
+		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
 	template<typename T>
@@ -836,7 +908,15 @@ public:
 		return id == npos;
 	}
 
-	constexpr static bool id_is_valid(id_type id) {
+	constexpr static void reset_version_counts() {
+
+	}
+
+	void clear_and_reset_version_counts() {
+		clear();
+	}
+
+	constexpr static bool id_is_valid(id_type id){
 		return true;
 	}
 
@@ -911,7 +991,7 @@ private:
 		slot_type empty_slot{ get_empty_obj() };
 		size_type prev_size = slots.size();
 		slots.resize(s, empty_slot);
-		pos.empty = forward_empty_slots(slots.begin(), prev_size, slots.end(), pos.empty, npos);
+		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
 	template<typename T>
@@ -980,6 +1060,14 @@ public:
 
 	bool id_is_end(id_type id) const {
 		return id == npos;
+	}
+
+	constexpr static void reset_version_counts() {
+
+	}
+
+	void clear_and_reset_version_counts() {
+		clear();
 	}
 
 	constexpr static bool id_is_valid(id_type id) {
@@ -1054,7 +1142,7 @@ private:
 	void _reserve(size_type s) {
 		size_type prev_size = slots.size();
 		slots.resize(s);
-		pos.empty = forward_empty_slots(slots.begin(), prev_size, slots.end(), pos.empty, npos);
+		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
 	template<typename T>
@@ -1121,9 +1209,18 @@ public:
 	id_type id_next(id_type id) const {
 		return _id_next(id.first);
 	}
-
+	
 	bool id_is_end(id_type id) const {
 		return id.first == npos;
+	}
+
+	void reset_version_counts() {
+		versioned_reset(slots.begin(), slots.end());
+	}
+
+	void clear_and_reset_version_counts() {
+		versioned_forward_empty_and_reset_all_slots(slots.begin(), slots.end(), size_type(0), npos);
+		pos = meta_positions_type{ { 0, slots.size() - 1 },{ npos, npos } };
 	}
 
 	bool id_is_valid(id_type id) {
@@ -1180,7 +1277,7 @@ public:
 
 
 template<typename T,
-typename E = get_empty<T>,
+	typename E = get_empty<T>,
 	typename V = default_version_type,
 	typename S = default_size_type,
 	typename A = default_allocator_type<T>>
@@ -1207,7 +1304,7 @@ private:
 		slot_type empty_slot{ get_empty_obj() };
 		size_type prev_size = slots.size();
 		slots.resize(s, empty_slot);
-		pos.empty = forward_empty_slots(slots.begin(), prev_size, slots.end(), pos.empty, npos);
+		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
 	template<typename T>
@@ -1288,6 +1385,15 @@ public:
 
 	bool id_is_end(id_type id) const {
 		return id.first == npos;
+	}
+
+	void reset_version_counts() {
+		versioned_reset(slots.begin(), slots.end());
+	}
+
+	void clear_and_reset_version_counts() {
+		regulated_forward_empty_and_reset_all_slots(slots.begin(), slots.end(), size_type(0), npos, get_empty_obj());
+		pos = meta_positions_type{ { 0, slots.size() - 1 },{ npos, npos } };
 	}
 
 	bool id_is_valid(id_type id) {
@@ -1376,7 +1482,7 @@ private:
 	void _reserve(size_type s) {
 		const auto prev_size = static_cast<size_type>(id_slots.size());
 		id_slots.resize(s);
-		empty_pos = trivial_forward_empty_slots(id_slots.begin(), prev_size, id_slots.end(), empty_pos, npos);
+		empty_pos = trivial_forward_empty_all_slots_with_meta(id_slots.begin(), prev_size, id_slots.end(), empty_pos, npos);
 
 		values.reserve(s);
 		id_positions.reserve(s);
@@ -1471,6 +1577,14 @@ public:
 
 	const value_type& id_value(id_type id) const {
 		return _get_value(iterator_slot(id_slots.cbegin(), id).value);
+	}
+
+	constexpr static void reset_version_counts() {
+
+	}
+
+	void clear_and_reset_version_counts() {
+		clear();
 	}
 
 	constexpr static bool id_is_valid(id_type id) {
@@ -1642,7 +1756,7 @@ private:
 	void _reserve(size_type s) {
 		const auto prev_size = static_cast<size_type>(id_slots.size());
 		id_slots.resize(s);
-		empty_pos = trivial_forward_empty_slots(id_slots.begin(), prev_size, id_slots.end(), empty_pos, npos);
+		empty_pos = trivial_forward_empty_all_slots_with_meta(id_slots.begin(), prev_size, id_slots.end(), empty_pos, npos);
 
 		values.reserve(s);
 		id_positions.reserve(s);
@@ -1696,7 +1810,7 @@ private:
 
 	void _clear() {
 		if (is_over_breakoff(capacity(), size())) {
-			trivial_versioned_forward_empty_all_slots(id_slots.begin(), id_slots.end(), size_type(0), npos);
+			versioned_trivial_forward_empty_all_slots(id_slots.begin(), id_slots.end(), size_type(0), npos);
 			empty_pos.first = 0;
 			empty_pos.second = id_slots.size() - 1;
 		}
@@ -1744,6 +1858,18 @@ public:
 
 	const value_type& id_value(id_type id) const {
 		return _get_value(iterator_slot(id_slots.cbegin(), id.first).value);
+	}
+
+	void reset_version_counts() {
+		versioned_reset(id_slots.begin(), id_slots.end());
+	}
+
+	void clear_and_reset_version_counts() {
+		versioned_trivial_forward_empty_and_reset_all_slots(id_slots.begin(), id_slots.end(), size_type(0), npos);
+		empty_pos.first = 0;
+		empty_pos.second = id_slots.size() - 1;
+		values.clear();
+		id_positions.clear();
 	}
 
 	bool id_is_valid(id_type id) {

@@ -45,14 +45,6 @@ int main() {
 	sl.erase(ids[1]);
 	sl.erase(ids[5]);
 	sl.erase(ids[8]);
-	/*
-	sl.erase(ids[2]);
-	sl.erase(ids[4]);
-	sl.erase(ids[0]);
-	sl.erase(ids[9]);
-	sl.erase(ids[6]);
-	sl.erase(ids[7]);
-	*/
 
 	slot_list_print_instrumented_values(sl);
 

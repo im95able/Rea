@@ -61,6 +61,9 @@ int main() {
 
 	sm.insert(instrumented{ 4000 });
 
+	sm.clear_and_reset_version_counts();
+	//sm.reset_version_counts();
+
 	slot_map_print_instrumented_values(sm);
 
 }
