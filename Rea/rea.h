@@ -275,6 +275,17 @@ inline
 // N models BidirectionalSlot
 void set_predecessor(N& slot, SizeType<N> prev) { slot.prev = prev; }
 
+template<typename N>
+// N models TrivialSlot
+inline
+SizeType<N> trivial_get_successor(N& slot) { return slot.value; }
+
+template<typename N>
+inline
+// N models TrivialSlot
+void trivial_set_successor(N& slot, SizeType<N> next) { slot.value = next; }
+
+
 
 template<typename N>
 // N models TrivialSlot 
@@ -410,6 +421,7 @@ struct bidirectional_slot_meta_positions {
 };
 
 
+
 // Default object for all controlled versions of "slot_list".
 // Returns default constructed object.
 template<typename T>
@@ -432,27 +444,31 @@ constexpr I grow_size(I size) {
 
 
 
-// Links the slot with "pos.empty.first" index to doubly linked list of filled slots. 
-// Removes that slot from the singly linked list of empty slots.
+
+// Links the slot with "pos.empty" index to doubly linked list of filled slots, and removes it from the singly linked list of empty slots.
+// That slot becomes the tail of the filled list. This has to be a different function from bidirectional_link_to_filled because it also needs
+// to set "pos.empty.second", in case the "pos.empty.first == pos.empty.second".
 template<typename I>
 // I models BidirectionalSlot_Iterator
 inline
-bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_filled(I first, const bidirectional_slot_meta_positions<SlotSizeType<I>> &pos, SlotSizeType<I> npos) {
-	bidirectional_slot_meta_positions<SlotSizeType<I>> new_pos = pos;
+bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_filled(I first, const bidirectional_slot_meta_positions<SlotSizeType<I>> &pos, 
+	SlotSizeType<I> npos) {
 
+	auto new_pos = pos;
 	const auto slot_pos = pos.empty.first;
 	auto &slot = iterator_slot(first, slot_pos);
 
 	if (pos.filled.first == npos) new_pos.filled.first = slot_pos;
 	if (pos.filled.second != npos) set_successor(iterator_slot(first, pos.filled.second), slot_pos);
 
-	if (pos.empty.second == pos.empty.first) {
-		new_pos.empty.second = npos;
+	if (new_pos.empty.first == new_pos.empty.second) {
 		new_pos.empty.first = npos;
+		new_pos.empty.second = npos;
 	}
 	else {
-		new_pos.empty.first = slot.next;
+		new_pos.empty.first = get_successor(slot);
 	}
+
 	set_successor(slot, npos);
 	set_predecessor(slot, pos.filled.second);
 
@@ -462,15 +478,16 @@ bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_filled(
 }
 
 
-// Links the slot with "filled_pos" index to singly linked list of empty slots. 
-// Removes that slot from the doubly linked list of filled slots.
+
+// Links the slot with "filled_pos" index to singly linked list of empty slots. and removes it from the doubly linked list of filled slots.
+// That slot becomes the head of the empty list. If no other erasures follow this one, it will be used for next insertion.
 template<typename I>
 // I models BidirectionalSlot_Iterator
 inline
 bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_empty(I first, const bidirectional_slot_meta_positions<SlotSizeType<I>> &pos,
 	SlotSizeType<I> npos, SlotSizeType<I> filled_pos) {
 
-	bidirectional_slot_meta_positions<SlotSizeType<I>> new_pos = pos;
+	auto new_pos = pos;
 	auto &slot = iterator_slot(first, filled_pos);
 
 	if (filled_pos == pos.filled.first) {
@@ -489,13 +506,57 @@ bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_empty(I
 		set_successor(iterator_slot(first, get_predecessor(slot)), get_successor(slot));
 	}
 
-	set_successor(slot, pos.empty.first);
-	new_pos.empty.first = filled_pos;
-	if (pos.empty.second == npos)
-		new_pos.empty.second = filled_pos;
+	set_successor(slot, pos.empty);
+	new_pos.empty = filled_pos;
 
 	return new_pos;
 }
+
+
+
+
+
+// Links the slot with "filled_pos" index to singly linked list of empty slots. and removes it from the doubly linked list of filled slots.
+// That slot, instead of becoming the head of the empty list like in the "bidirectional_link_to_empty", becomes its tail. If no other erasures follow this one,
+// and no reallocation happens afterwards, it will be the last slot used for insertion. The reason that this new empty slot is put at tail is beacuse we want 
+// to be seldmomly reusing the same slots in order to not increase their version counts often. And as such, guard against version count overflow as much as possible.
+template<typename I>
+// I models BidirectionalSlot_Iterator
+inline
+bidirectional_slot_meta_positions<SlotSizeType<I>> versioned_bidirectional_link_to_empty(I first, const bidirectional_slot_meta_positions<SlotSizeType<I>> &pos,
+	SlotSizeType<I> npos, SlotSizeType<I> filled_pos) {
+
+	auto new_pos = pos;
+	auto &slot = iterator_slot(first, filled_pos);
+
+	if (filled_pos == pos.filled.first) {
+		new_pos.filled.first = get_successor(slot);
+		if (new_pos.filled.first != npos)
+			set_predecessor(iterator_slot(first, new_pos.filled.first), npos);
+		else
+			new_pos.filled.second = npos;
+	}
+	else if (filled_pos == pos.filled.second) {
+		new_pos.filled.second = get_predecessor(slot);
+		set_successor(iterator_slot(first, new_pos.filled.first), npos);
+	}
+	else {
+		set_predecessor(iterator_slot(first, get_successor(slot)), get_predecessor(slot));
+		set_successor(iterator_slot(first, get_predecessor(slot)), get_successor(slot));
+	}
+
+	set_successor(slot, npos);
+	if (new_pos.empty.second != npos) {
+		set_successor(iterator_slot(first, new_pos.empty.second), filled_pos);
+	}
+	else {
+		new_pos.empty.first = filled_pos;
+	}
+	new_pos.empty.second = filled_pos;
+
+	return new_pos;
+}
+
 
 
 // Empties all slots in memory successive order.
@@ -569,14 +630,14 @@ template<typename I, typename P>
 // P models BinaryPredicate : void operator()(ValueType<I> &, S);
 inline
 std::pair<SlotSizeType<I>, SlotSizeType<I>> forward_empty_slots_basis(I first, SlotSizeType<I> new_empty, I last,
-	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty_meta, SlotSizeType<I> npos, P set_successor) {
-	if (empty_meta.second != npos)
-		set_successor(iterator_slot(first, empty_meta.second), new_empty);
+	const std::pair<SlotSizeType<I>, SlotSizeType<I>> &empty, SlotSizeType<I> npos, P set_successor) {
+	if (empty.second != npos)
+		set_successor(iterator_slot(first, empty.second), new_empty);
 
 	forward_empty_all_slots_basis(first + static_cast<DifferenceType<I>>(new_empty), last, new_empty, npos, set_successor);
 
 	const auto last_empty = static_cast<SlotSizeType<I>>(last - first - 1);
-	return empty_meta.first != npos ? std::pair<SlotSizeType<I>, SlotSizeType<I>>{ empty_meta.first, last_empty } :
+	return empty.first != npos ? std::pair<SlotSizeType<I>, SlotSizeType<I>>{ empty.first, last_empty } :
 		std::pair<SlotSizeType<I>, SlotSizeType<I>>{ new_empty, last_empty };
 }
 
@@ -694,8 +755,8 @@ SlotSizeType<I1> versioned_forward_empty_filled_dense_slots(I1 &first_position, 
 
 
 template<typename T,
-typename S = default_size_type,
-typename A = default_allocator_type<T>>
+	typename S = default_size_type,
+	typename A = default_allocator_type<T>>
 class slot_list {
 public:
 	using value_type = T;
@@ -824,9 +885,9 @@ public:
 
 
 template<typename T,
-typename E = get_empty<T>,
-typename S = default_size_type,
-typename A = default_allocator_type<T>>
+	typename E = get_empty<T>,
+	typename S = default_size_type,
+	typename A = default_allocator_type<T>>
 class controlled_slot_list {
 public:
 	using value_type = T;
@@ -970,9 +1031,9 @@ public:
 
 
 template<typename T,
-typename V = default_version_type,
-typename S = default_size_type,
-typename A = default_allocator_type<T>>
+	typename V = default_version_type,
+	typename S = default_size_type,
+	typename A = default_allocator_type<T>>
 class versioned_slot_list {
 public:
 	using value_type = T;
@@ -1006,7 +1067,7 @@ private:
 
 	id_type _erase(size_type index) {
 		id_type next = _id_next(index);
-		pos = bidirectional_link_to_empty(slots.begin(), pos, npos, index);
+		pos = versioned_bidirectional_link_to_empty(slots.begin(), pos, npos, index);
 		++iterator_slot(slots.begin(), index).version;
 		--filled_size;
 		return next;
@@ -1120,9 +1181,9 @@ public:
 
 template<typename T,
 typename E = get_empty<T>,
-typename V = default_version_type,
-typename S = default_size_type,
-typename A = default_allocator_type<T>>
+	typename V = default_version_type,
+	typename S = default_size_type,
+	typename A = default_allocator_type<T>>
 class regulated_slot_list {
 public:
 	using value_type = T;
@@ -1159,7 +1220,7 @@ private:
 
 	id_type _erase(size_type index) {
 		id_type id_next = _id_next(index);
-		pos = bidirectional_link_to_empty(slots.begin(), pos, npos, index);
+		pos = versioned_bidirectional_link_to_empty(slots.begin(), pos, npos, index);
 		auto &slot = iterator_slot(slots.begin(), index);
 		slot.value = get_empty_obj();
 		++slot.version;
@@ -1285,8 +1346,8 @@ public:
 
 
 template<typename T,
-typename S = default_size_type,
-typename A = default_allocator_type<T>>
+	typename S = default_size_type,
+	typename A = default_allocator_type<T>>
 class slot_map {
 public:
 	using value_type = T;
@@ -1549,9 +1610,9 @@ public:
 
 
 template<typename T,
-typename S = default_size_type,
-typename V = default_version_type,
-typename A = default_allocator_type<T>>
+	typename S = default_size_type,
+	typename V = default_version_type,
+	typename A = default_allocator_type<T>>
 class versioned_slot_map {
 public:
 	using value_type = T;
@@ -1619,11 +1680,17 @@ private:
 		id_positions.pop_back();
 		values.pop_back();
 		auto &slot = iterator_slot(id_slots.begin(), id_index);
-		slot.value = empty_pos.first;
+		slot.value = npos;
 		++slot.version;
-		if (empty_pos.second == npos)
+
+		if (empty_pos.second == npos) {
+			empty_pos.first = id_index;
 			empty_pos.second = id_index;
-		empty_pos.first = id_index;
+		}
+		else {
+			trivial_set_successor(iterator_slot(id_slots.begin(), empty_pos.second), id_index);
+			empty_pos.second = id_index;
+		}
 	}
 
 

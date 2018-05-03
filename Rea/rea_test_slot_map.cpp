@@ -44,6 +44,8 @@ int main() {
 	sm.erase(ids[8]);
 	sm.erase(ids[4]);
 
+	sm.reserve(40);
+
 	slot_map_print_instrumented_values(sm);
 
 	sm.insert(instrumented{ 1000 });
@@ -60,6 +62,7 @@ int main() {
 	sm.insert(instrumented{ 4000 });
 
 	slot_map_print_instrumented_values(sm);
+
 }
 
 #endif
