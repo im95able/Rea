@@ -1,22 +1,20 @@
 # Rea
 Rea is a lightweight library of data structures implemented in C++11, designed for constant time insertion, erasure, lookup, and fastest possible iteration. Great for using in games or any other software which needs to manage thousands upon thousands of objects.
 
-There are 6 data structures included in this library : `slot_list`, `controlled_slot_list`, `versioned_slot_list`, `regulated_slot_list`, `slot_map` and `versioned_slot_map`. The two key data structures are `slot_list` and `list_map`: the other four are only simple variations of those 2. 
+There are 6 data structures included in this library : `slot_list`, `controlled_slot_list`, `versioned_slot_list`, `regulated_slot_list`, `slot_map` and `versioned_slot_map`. The two key data structures are `slot_list` and `slot_map`; the other four are only simple variations of those two. 
 
 # SlotList 
 Use SlotList when you have to insert, erase, or look up data in constant time, without the need for constantly repeated iteration. If you require all of those things plus fast iteration, use SlotMap.
 
 ## Implementation
-SlotList internally stores its objects in some RandomAccessContainer (by default `std::deque`). Once you erase an object from SlotList, the slot where that object used to reside becomes available for reuse. The next object you insert will be put in the last emptied slot.
-The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the 
-internal container from `std::deque` to some other container.
+SlotList internally stores its objects in some RandomAccessContainer (by default `std::deque`). Once you erase an object from it, the slot where that object used to reside becomes available for reuse. A free list of all empty slots is kept. The next object you insert will be put in the last emptied slot. The internal container will never grow unless all slots are filled. The "Discussion" section shows how to change the internal container from `std::deque` to some other container.
 
-Whenever you insert a value into the SlotList you get its id, which you can later use to access that object. "id" is an index with or without a version count in case of the version variatons of SlotLists and DenseMaps. More on that later on. That index is what allows us to access the objects in constant time.
+Whenever you insert a value into the SlotList you get its id, which you can later use to access that object. ID is an index with or without a version count in case of the version variatons of SlotLists and DenseMaps. More on that later on. That index is what allows us to access the objects in constant time.
 
-While you can use the ids to iterate over all stored objects, it's not advisable to do it repeatedly: you might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use SlotMap.
+While you can use the ids to iterate over all stored objects, it's not advisable to do it repeatedly; you might be jumping all over memory and hence destroying cache locality. As stated above, for iteration use SlotMap.
 
 ## Usage
-All SlotLists have the same first, and the last 2 template arguments.
+All SlotLists have the same first, and the last two template arguments.
 ```cpp
 some_slot_list<T,                      // value_type 
                .
@@ -25,7 +23,7 @@ some_slot_list<T,                      // value_type
                S = std::size_t,        // size_type 
                A = std::allocator<T>>; // allocator_type 
 ```
-Considering that each slot will store two objects of "size_type" type as well as the single object of "value_type", if you know in advance the maximum size of the container, you might want to restrict how much space slots take up by choosing a smaller "size_type" which can still be used to reference all objects in the container.
+Each slot will store two objects of "size_type" type as well as the single object of "value_type". In a sense each slot acts as a node of a doubly linked list. Knowing that and knowing the maximum number of objects which will be stored, you might want to restrict how much space slots take up by choosing a smaller "size_type". The behavior is undefined if the size of the SlotList grows beyond the maximum value of "size_type".
 
 Template arguments for all SlotList variations are explained below.
 
@@ -118,7 +116,7 @@ rea::controlled_slot_list<double, set_empty_double, std::unit16_t> c_sl(set_empt
 
 
 ### variation 3 : versioned_slot_list
-If, for instance, you are erasing objects inside the SlotList from 2 different parts of your program, ids might no longer
+If, for instance, you are erasing and accessing objects of the same SlotList from 2 different parts of your program, ids might no longer
 point to correct objects, but to either erased or objects filled with different values than what the id originally pointed to.
 
 To solve that issue, `rea::versioned_slot_list` is introduced. It takes as a second template argument an IntegralType, which will represent the current version of the slot (default is `std::size_t`). Each time an object is erased, the slot which contains that object increases its version count by 1.
@@ -186,7 +184,7 @@ rea::regulated_slot_list<std::string, get_empty_string> sl_strings;
 # SlotMap
 If like in the SlotList you need constant time insertion, removal, and lookup, as well as cache friendly iteration through a contiguous array, use SlotMap.
 
-Implementation details are given below, although there is a [video](https://www.youtube.com/watch?v=SHaAR7XPtNU) which explains exactly what this data structure is. If you've seen it, "Implementation" section won't give you any more details and could be skipped.
+Implementation details are given below, although there is a [video](https://www.youtube.com/watch?v=SHaAR7XPtNU) which explains exactly what this data structure is. Precisely, the video is describing what's called in this library `rea::versioned_slot_map`. If you've seen it, "Implementation" section won't give you any more details and could be skipped.
 
 ## Implementation
 SlotMap is internally implemented as 2 std::vectors and a slot_list like data structure.
@@ -205,7 +203,7 @@ As stated earlier the main difference between the SlotList and the SlotMap is in
 
 Considering all of the users objects are kept in a contiguous array, and all erased objects are destructed, there is no need for controlled or regulated version of SlotMap.
 
-All SlotMaps, just like all SlotLists, have the same first, and the last 2 template arguments.
+All SlotMaps, just like all SlotLists, have the same first, and the last two template arguments.
 ```cpp
 some_slot_map<T,                      // value_type 
               .
