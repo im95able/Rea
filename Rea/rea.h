@@ -851,10 +851,10 @@ private:
 		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
-	template<typename T>
-	id_type _insert(T&& v) {
+	template<typename U>
+	id_type _insert(U&& v) {
 		pos = bidirectional_link_to_filled(slots.begin(), pos, npos);
-		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<T>(v);
+		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<U>(v);
 		++filled_size;
 		return pos.filled.second;
 	}
@@ -994,10 +994,10 @@ private:
 		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
-	template<typename T>
-	id_type _insert(T&& v) {
+	template<typename U>
+	id_type _insert(U&& v) {
 		pos = bidirectional_link_to_filled(slots.begin(), pos, npos);
-		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<T>(v);
+		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<U>(v);
 		++filled_size;
 		return pos.filled.second;
 	}
@@ -1145,10 +1145,10 @@ private:
 		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
-	template<typename T>
-	id_type _insert(T&& v) {
+	template<typename U>
+	id_type _insert(U&& v) {
 		pos = bidirectional_link_to_filled(slots.begin(), pos, npos);
-		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<T>(v);
+		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<U>(v);
 		++filled_size;
 		return _get_id_unguarded(pos.filled.second);
 	}
@@ -1307,10 +1307,10 @@ private:
 		pos.empty = forward_empty_all_slots_with_meta(slots.begin(), prev_size, slots.end(), pos.empty, npos);
 	}
 
-	template<typename T>
-	id_type _insert(T&& v) {
+	template<typename U>
+	id_type _insert(U&& v) {
 		pos = bidirectional_link_to_filled(slots.begin(), pos, npos);
-		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<T>(v);
+		iterator_slot(slots.begin(), pos.filled.second).value = std::forward<U>(v);
 		++filled_size;
 		return _get_id_unguarded(pos.filled.second);
 	}
@@ -1488,10 +1488,10 @@ private:
 		id_positions.reserve(s);
 	}
 
-	template<typename T>
-	std::pair<iterator, id_type> _insert(T&& v) {
+	template<typename U>
+	std::pair<iterator, id_type> _insert(U&& v) {
 		const auto value_pos = values.size();
-		values.push_back(std::forward<T>(v));
+		values.push_back(std::forward<U>(v));
 		id_positions.push_back(empty_pos.first);
 
 		const auto id = empty_pos.first;
@@ -1762,10 +1762,10 @@ private:
 		id_positions.reserve(s);
 	}
 
-	template<typename T>
-	std::pair<iterator, id_type> _insert(T&& v) {
+	template<typename U>
+	std::pair<iterator, id_type> _insert(U&& v) {
 		const auto value_pos = values.size();
-		values.push_back(std::forward<T>(v));
+		values.push_back(std::forward<U>(v));
 		id_positions.push_back(empty_pos.first);
 
 		const auto id = empty_pos.first;
