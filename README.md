@@ -62,7 +62,7 @@ T get_and_remove_rand_value(std::vector<T> &values) {
 int main() {
    using sl_type = rea::slot_list<std::pair<int, int>>;
    sl_type sl;
-   std::vector<sm_type::id_type> ids;
+   std::vector<sl_type::id_type> ids;
    ids.reserve(1000);
    sl.reserve(1000);
    
