@@ -94,7 +94,7 @@ struct trivial_slot {
 	value_type value;
 
 	trivial_slot() = default;
-	trivial_slot(value_type v) : value(v) {}
+	explicit trivial_slot(value_type v) : value(v) {}
 };
 
 
@@ -110,7 +110,7 @@ struct versioned_trivial_slot {
 	version_type version;
 
 	versioned_trivial_slot() = default;
-	versioned_trivial_slot(value_type v) : version(min_type_value<version_type>()), value(v) {}
+	explicit versioned_trivial_slot(value_type v) : version(min_type_value<version_type>()), value(v) {}
 };
 
 
@@ -127,7 +127,7 @@ struct bidirectional_slot {
 	value_type value;
 
 	template<typename... Args>
-	bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), value(std::forward<Args>(args)...) {}
+	explicit bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), value(std::forward<Args>(args)...) {}
 };
 
 
@@ -146,7 +146,7 @@ struct versioned_bidirectional_slot {
 	value_type value;
 
 	template<typename... Args>
-	versioned_bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), version(min_type_value<version_type>()), value(std::forward<Args>(args)...) {}
+	explicit versioned_bidirectional_slot(Args&&... args) : prev(size_type(0)), next(size_type(0)), version(min_type_value<version_type>()), value(std::forward<Args>(args)...) {}
 };
 
 
@@ -547,8 +547,8 @@ bidirectional_slot_meta_positions<SlotSizeType<I>> bidirectional_link_to_empty(I
 		set_successor(iterator_slot(first, get_predecessor(slot)), get_successor(slot));
 	}
 
-	set_successor(slot, pos.empty);
-	new_pos.empty = filled_pos;
+	set_successor(slot, pos.empty.first);
+	new_pos.empty.first = filled_pos;
 
 	return new_pos;
 }
@@ -1546,7 +1546,7 @@ private:
 
 	template<typename I>
 	value_type &_get_value(I index) {
-		return iterator_slot(values.cbegin(), index);
+		return iterator_slot(values.begin(), index);
 	}
 
 public:
@@ -1788,7 +1788,7 @@ private:
 		if (value_pos != last_pos) {
 			const auto pos = iterator_slot(id_positions.begin(), last_pos);
 			iterator_slot(id_positions.begin(), value_pos) = pos;
-			iterator_slot(id_slots.begin(), pos) = value_pos;
+			iterator_slot(id_slots.begin(), pos).value = value_pos;
 			iterator_slot(values.begin(), value_pos) = std::move(iterator_slot(values.begin(), last_pos));
 		}
 		id_positions.pop_back();
